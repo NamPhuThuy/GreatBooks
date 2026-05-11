@@ -181,8 +181,8 @@ export class ArticleService {
 
     return {
       ...indexEntry,
-      vi: { ...indexEntry.vi, content: content.vi.content },
-      en: { ...indexEntry.en, content: content.en.content }
+      vi: { ...indexEntry.vi, content: content.vi.content, chapters: content.vi.chapters },
+      en: { ...indexEntry.en, content: content.en.content, chapters: content.en.chapters }
     };
   }
 

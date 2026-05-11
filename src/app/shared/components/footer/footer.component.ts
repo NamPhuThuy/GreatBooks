@@ -29,7 +29,7 @@ import { LanguageService } from '../../../core/services/language.service';
               </li>
               <li>
                 <a
-                  [routerLink]="['/', langService.currentLang(), 'articles']"
+                  [routerLink]="['/', langService.currentLang(), 'books']"
                   class="text-sm hover:text-white transition-colors"
                 >
                   {{ langService.t('nav.articles') }}

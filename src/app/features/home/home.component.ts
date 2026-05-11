@@ -85,7 +85,7 @@ import { ArticleCardComponent } from '../article-list/article-card.component';
             </button>
 
             <a
-              [routerLink]="['/', lang(), 'articles']"
+              [routerLink]="['/', lang(), 'books']"
               class="flex items-center gap-2 px-8 py-3.5 rounded-xl
                 bg-white/15 backdrop-blur-md border border-white/25
                 hover:bg-white/25 transition-all duration-200
@@ -271,7 +271,7 @@ import { ArticleCardComponent } from '../article-list/article-card.component';
             {{ langService.t('common.featuredArticles') }}
           </h2>
           <a
-            [routerLink]="['/', lang(), 'articles']"
+            [routerLink]="['/', lang(), 'books']"
             class="text-blue-600 hover:text-blue-800 font-medium text-sm flex items-center gap-1"
           >
             {{ langService.t('common.browseAll') }}
@@ -366,7 +366,7 @@ export class HomeComponent implements OnInit {
     if (articles.length === 0) return;
     const random = articles[Math.floor(Math.random() * articles.length)];
     this.showRandomMenu.set(false);
-    this.router.navigate(['/', this.lang(), 'article', random.id]);
+    this.router.navigate(['/', this.lang(), 'book', random.id]);
   }
 
   goRandomByGenre(): void {
@@ -376,7 +376,7 @@ export class HomeComponent implements OnInit {
     if (articles.length === 0) return;
     const random = articles[Math.floor(Math.random() * articles.length)];
     this.showRandomMenu.set(false);
-    this.router.navigate(['/', this.lang(), 'article', random.id]);
+    this.router.navigate(['/', this.lang(), 'book', random.id]);
   }
 
   goRandomByDifficulty(): void {
@@ -386,7 +386,7 @@ export class HomeComponent implements OnInit {
     if (articles.length === 0) return;
     const random = articles[Math.floor(Math.random() * articles.length)];
     this.showRandomMenu.set(false);
-    this.router.navigate(['/', this.lang(), 'article', random.id]);
+    this.router.navigate(['/', this.lang(), 'book', random.id]);
   }
 
   goRandomByAuthor(): void {
@@ -401,7 +401,7 @@ export class HomeComponent implements OnInit {
     if (articles.length === 0) return;
     const random = articles[Math.floor(Math.random() * articles.length)];
     this.showRandomMenu.set(false);
-    this.router.navigate(['/', this.lang(), 'article', random.id]);
+    this.router.navigate(['/', this.lang(), 'book', random.id]);
   }
 
   formatDate(dateStr: string): string {

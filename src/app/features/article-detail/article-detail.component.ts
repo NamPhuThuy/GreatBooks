@@ -43,7 +43,7 @@ import { extractReferences, formatReferencesSection } from '../../core/utils/ref
           <p class="text-gray-500 dark:text-gray-400 text-lg">
             {{ langService.isVietnamese() ? 'Không tìm thấy bài viết.' : 'Article not found.' }}
           </p>
-          <a [routerLink]="['/', lang(), 'articles']"
+          <a [routerLink]="['/', lang(), 'books']"
              class="mt-4 inline-block text-blue-600 dark:text-blue-400 hover:underline">
             ← {{ langService.t('article.backToList') }}
           </a>
@@ -53,7 +53,7 @@ import { extractReferences, formatReferencesSection } from '../../core/utils/ref
         <!-- Article Header -->
         <header class="mb-8">
           <div class="flex items-center gap-2 mb-4 flex-wrap">
-            <a [routerLink]="['/', lang(), 'articles']"
+            <a [routerLink]="['/', lang(), 'books']"
                class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium flex items-center gap-1">
               ← {{ langService.t('article.backToList') }}
             </a>

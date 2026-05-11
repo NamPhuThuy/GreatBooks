@@ -11,7 +11,7 @@ import { translateGenre, translateDifficulty } from '../../core/utils/genre-tran
   imports: [RouterLink],
   template: `
     <a
-      [routerLink]="['/', lang(), 'article', article().id]"
+      [routerLink]="['/', lang(), 'book', article().id]"
       (mouseenter)="onHover()"
       class="group block bg-white dark:bg-gray-800 rounded-xl shadow-sm
               border border-gray-200 dark:border-gray-700

@@ -16,7 +16,7 @@ import { translateGenre } from '../../core/utils/genre-translations';
         </h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           @for (article of articles(); track article.id) {
-            <a [routerLink]="['/', lang(), 'article', article.id]"
+            <a [routerLink]="['/', lang(), 'book', article.id]"
                class="group block p-4 bg-white dark:bg-gray-800 rounded-lg
                       border border-gray-200 dark:border-gray-700
                       hover:border-blue-200 dark:hover:border-blue-700
