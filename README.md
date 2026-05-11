@@ -1,4 +1,4 @@
-# MonsterboxArticles
+# Great Books Library
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.1.4.
 
@@ -54,6 +54,83 @@ ng e2e
 
 Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
 
-## Additional Resources
+## Content Management
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+### How to Add a New Book
+
+To add a new book to the library, follow these three steps:
+
+#### 1. Register the Book Metadata
+Add a new entry to `src/assets/data/books-index.json`. This entry is used for the book list and search.
+
+```json
+{
+  "id": "your-book-slug",
+  "metadata": {
+    "titleVi": "Tiêu đề tiếng Việt",
+    "titleEn": "English Title",
+    "genres": "Genre Name",
+    "difficultyLevel": "Cơ bản / Trung bình / Nâng cao",
+    "tags": ["tag1", "tag2"],
+    "authors": ["Author Name"],
+    "publishedDate": "2024-01-01T00:00:00",
+    "coverImage": "cover.jpg" 
+  },
+  "vi": {
+    "title": "Tiêu đề tiếng Việt",
+    "description": "Mô tả ngắn gọn về sách.",
+    "excerpt": "Đoạn trích dẫn..."
+  },
+  "en": {
+    "title": "English Title",
+    "description": "Short description of the book.",
+    "excerpt": "Excerpt..."
+  }
+}
+```
+
+#### 2. Create the Book Folder
+Create a directory at `src/assets/data/books/your-book-slug/`.
+
+#### 3. Add the Book Content
+Create a file named `book.json` inside that folder with the following structure:
+
+```json
+{
+  "id": "your-book-slug",
+  "vi": {
+    "chapters": [
+      {
+        "title": "Chương 1",
+        "image": "chapter-1-hero.jpg",
+        "sections": [
+          {
+            "title": "Phần 1",
+            "subSections": [
+              {
+                "title": "Tiểu mục A",
+                "content": "Nội dung markdown ở đây...",
+                "image": "diagram.png"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "en": {
+    "chapters": [ ... ]
+  }
+}
+```
+
+### Adding Images
+1.  **Place Images**: Put all images (covers, diagrams, illustrations) inside the specific book's folder: `src/assets/data/books/{slug}/`.
+2.  **Reference Images**: 
+    *   In `books-index.json`, use the `coverImage` field in metadata.
+    *   In `book.json`, use the `image` field in `Chapter`, `Section`, or `SubSection`.
+3.  **Automatic Paths**: The application will automatically prepend the correct path (`/assets/data/books/{slug}/`) to these filenames.
+
+## Development Resources
+... (rest of the file)
+
