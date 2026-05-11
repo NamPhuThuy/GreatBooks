@@ -2,17 +2,20 @@ export interface SubSection {
   title?: string;
   content: string;
   image?: string;
+  imageWidth?: number;
 }
 
 export interface Section {
   title?: string;
   image?: string;
+  imageWidth?: number;
   subSections: SubSection[];
 }
 
 export interface Chapter {
   title?: string;
   image?: string;
+  imageWidth?: number;
   sections: Section[];
 }
 

@@ -15,13 +15,25 @@ export class FormatContentPipe implements PipeTransform {
     result = result.replace(/\r\n/g, '\n');
 
     // 2. Fix image paths if slug is provided
-    // Converts ![alt](image.jpg) to ![alt](/assets/data/books/slug/image.jpg)
     if (slug) {
       result = result.replace(/!\[(.*?)\]\((.*?)\)/g, (match, alt, path) => {
-        if (!path.startsWith('http') && !path.startsWith('/') && !path.startsWith('./')) {
-          return `![${alt}](/assets/data/books/${slug}/${path})`;
+        const [url, query] = path.split('?');
+        let finalPath = url;
+
+        if (!url.startsWith('http') && !url.startsWith('/') && !url.startsWith('./')) {
+          finalPath = `/assets/data/books/${slug}/${url}`;
         }
-        return match;
+
+        if (query) {
+          const widthMatch = query.match(/(?:w|width)=(\d+)/);
+          if (widthMatch) {
+            const width = widthMatch[1];
+            // If width is specified, return raw HTML img to ensure precise control
+            return `<img src="${finalPath}" alt="${alt}" style="width: ${width}vw; min-width: 300px; max-width: 100%; display: block; margin: 2rem auto; border-radius: 1rem;">`;
+          }
+        }
+
+        return `![${alt}](${finalPath})`;
       });
     }
 

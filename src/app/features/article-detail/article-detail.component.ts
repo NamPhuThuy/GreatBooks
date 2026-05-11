@@ -135,14 +135,17 @@ import { extractReferences, formatReferencesSection } from '../../core/utils/ref
           }
 
           <!-- Article Content (Chapters, Sections, Subsections) -->
-          <article class="prose prose-lg dark:prose-invert max-w-none" (click)="onContentClick($event)">
+          <article class="prose prose-lg dark:prose-invert max-w-none book-content" (click)="onContentClick($event)">
             @if (articleContent()) {
               @for (chapter of articleContent()!.chapters; track chapter.title) {
                 @if (chapter.title) {
                   <h2 class="text-3xl font-bold mt-10 mb-6 text-gray-900 dark:text-gray-100">{{ chapter.title }}</h2>
                 }
                 @if (chapter.image) {
-                  <div class="my-8 overflow-hidden rounded-xl shadow-lg">
+                  <div class="my-8 overflow-hidden rounded-xl shadow-lg mx-auto" 
+                       [style.width]="chapter.imageWidth ? chapter.imageWidth + 'vw' : ''"
+                       [style.min-width]="chapter.imageWidth ? '300px' : ''"
+                       [style.max-width]="'100%'">
                     <img [src]="'/assets/data/books/' + article()?.id + '/' + chapter.image" class="w-full h-auto" />
                   </div>
                 }
@@ -151,7 +154,10 @@ import { extractReferences, formatReferencesSection } from '../../core/utils/ref
                     <h3 class="text-2xl font-semibold mt-8 mb-4 text-gray-800 dark:text-gray-200">{{ section.title }}</h3>
                   }
                   @if (section.image) {
-                    <div class="my-6 overflow-hidden rounded-lg shadow-md">
+                    <div class="my-6 overflow-hidden rounded-lg shadow-md mx-auto"
+                         [style.width]="section.imageWidth ? section.imageWidth + 'vw' : ''"
+                         [style.min-width]="section.imageWidth ? '300px' : ''"
+                         [style.max-width]="'100%'">
                       <img [src]="'/assets/data/books/' + article()?.id + '/' + section.image" class="w-full h-auto" />
                     </div>
                   }
@@ -160,7 +166,10 @@ import { extractReferences, formatReferencesSection } from '../../core/utils/ref
                       <h4 class="text-xl font-medium mt-6 mb-3 text-gray-800 dark:text-gray-300">{{ sub.title }}</h4>
                     }
                     @if (sub.image) {
-                      <div class="my-4 overflow-hidden rounded shadow-sm">
+                      <div class="my-4 overflow-hidden rounded shadow-sm mx-auto"
+                           [style.width]="sub.imageWidth ? sub.imageWidth + 'vw' : ''"
+                           [style.min-width]="sub.imageWidth ? '300px' : ''"
+                           [style.max-width]="'100%'">
                         <img [src]="'/assets/data/books/' + article()?.id + '/' + sub.image" class="w-full h-auto" />
                       </div>
                     }
