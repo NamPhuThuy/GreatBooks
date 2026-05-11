@@ -1,13 +1,13 @@
 # Markdown to JSON Conversion Instructions
 
-This document provides instructions for converting a Markdown-based book/article into the structured JSON format used by the Great Books Library project.
+This document provides instructions for converting a Markdown-based article/article into the structured JSON format used by the Great Articles Library project.
 
 ---
 
 ## 1. Input Markdown Structure
 For the best results, ensure the input Markdown follows this hierarchy:
 
-- `# Title` (Book Title)
+- `# Title` (Article Title)
 - `## Chapter Title` (Chapters)
 - `### Section Title` (Sections)
 - `#### Sub-section Title` (Sub-sections)
@@ -15,8 +15,8 @@ For the best results, ensure the input Markdown follows this hierarchy:
 
 ---
 
-## 2. Output: Book Content (`book.json`)
-Each book must have a `book.json` file located in `src/assets/data/books/{slug}/`.
+## 2. Output: Article Content (`article.json`)
+Each article must have a `article.json` file located in `src/assets/data/articles/{slug}/`.
 
 ### Structure:
 ```json
@@ -65,14 +65,14 @@ Images can be added **anywhere** within the body text using standard Markdown sy
 `![Caption Text](filename.jpg)`
 
 ### How it works:
-1.  Place the image file in the book's folder: `src/assets/data/books/{slug}/`.
+1.  Place the image file in the article's folder: `src/assets/data/articles/{slug}/`.
 2.  Use the filename directly in your Markdown `content`.
-3.  The application will automatically fix the path to `/assets/data/books/{slug}/filename.jpg` during rendering.
+3.  The application will automatically fix the path to `/assets/data/articles/{slug}/filename.jpg` during rendering.
 
 ---
 
-## 4. Output: Metadata (`books-index.json`)
-Every book must be registered in the `src/assets/data/books-index.json` file.
+## 4. Output: Metadata (`articles-index.json`)
+Every article must be registered in the `src/assets/data/articles-index.json` file.
 
 ### Entry Structure:
 ```json
@@ -105,18 +105,18 @@ Every book must be registered in the `src/assets/data/books-index.json` file.
 
 ### Conversion Rules:
 1.  **ID**: Generate a URL-friendly slug from the title (lowercase, hyphens).
-2.  **Length**: Character count of the entire book content.
+2.  **Length**: Character count of the entire article content.
 3.  **Excerpt**: Take the first 150-200 characters of the introduction.
-4.  **Description**: Summarize the core message of the book in a few sentences.
+4.  **Description**: Summarize the core message of the article in a few sentences.
 
 ---
 
 ## 4. Instruction for Chatbots
 When asking a chatbot to perform this conversion, use the following prompt:
 
-> "Please convert the following Markdown book into the JSON structure for the Great Books Library project. 
-> 1. Create a `book.json` structure following the Chapter -> Section -> SubSection hierarchy. 
-> 2. Extract metadata for the `books-index.json` entry, including a summary and tags. 
+> "Please convert the following Markdown article into the JSON structure for the Great Articles Library project. 
+> 1. Create a `article.json` structure following the Chapter -> Section -> SubSection hierarchy. 
+> 2. Extract metadata for the `articles-index.json` entry, including a summary and tags. 
 > 3. Ensure the 'id' is a consistent slug across both files. 
 > 4. If images are mentioned, place the filenames in the specific 'image' fields and remove them from the text body."
 

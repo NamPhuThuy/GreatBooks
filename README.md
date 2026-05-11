@@ -1,4 +1,4 @@
-# Great Books Library
+# Great Articles Library
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.1.4.
 
@@ -56,16 +56,16 @@ Angular CLI does not come with an end-to-end testing framework by default. You c
 
 ## Content Management
 
-### How to Add a New Book
+### How to Add a New Article
 
-To add a new book to the library, follow these three steps:
+To add a new article to the library, follow these three steps:
 
-#### 1. Register the Book Metadata
-Add a new entry to `src/assets/data/books-index.json`. This entry is used for the book list and search.
+#### 1. Register the Article Metadata
+Add a new entry to `src/assets/data/articles-index.json`. This entry is used for the article list and search.
 
 ```json
 {
-  "id": "your-book-slug",
+  "id": "your-article-slug",
   "metadata": {
     "titleVi": "Tiêu đề tiếng Việt",
     "titleEn": "English Title",
@@ -83,21 +83,21 @@ Add a new entry to `src/assets/data/books-index.json`. This entry is used for th
   },
   "en": {
     "title": "English Title",
-    "description": "Short description of the book.",
+    "description": "Short description of the article.",
     "excerpt": "Excerpt..."
   }
 }
 ```
 
-#### 2. Create the Book Folder
-Create a directory at `src/assets/data/books/your-book-slug/`.
+#### 2. Create the Article Folder
+Create a directory at `src/assets/data/articles/your-article-slug/`.
 
-#### 3. Add the Book Content
-Create a file named `book.json` inside that folder with the following structure:
+#### 3. Add the Article Content
+Create a file named `article.json` inside that folder with the following structure:
 
 ```json
 {
-  "id": "your-book-slug",
+  "id": "your-article-slug",
   "vi": {
     "chapters": [
       {
@@ -125,11 +125,11 @@ Create a file named `book.json` inside that folder with the following structure:
 ```
 
 ### Adding Images
-1.  **Place Images**: Put all images (covers, diagrams, illustrations) inside the specific book's folder: `src/assets/data/books/{slug}/`.
+1.  **Place Images**: Put all images (covers, diagrams, illustrations) inside the specific article's folder: `src/assets/data/articles/{slug}/`.
 2.  **Reference Images**: 
-    *   In `books-index.json`, use the `coverImage` field in metadata.
-    *   In `book.json`, use the `image` field in `Chapter`, `Section`, or `SubSection`.
-3.  **Automatic Paths**: The application will automatically prepend the correct path (`/assets/data/books/{slug}/`) to these filenames.
+    *   In `articles-index.json`, use the `coverImage` field in metadata.
+    *   In `article.json`, use the `image` field in `Chapter`, `Section`, or `SubSection`.
+3.  **Automatic Paths**: The application will automatically prepend the correct path (`/assets/data/articles/{slug}/`) to these filenames.
 
 ## Development Resources
 ... (rest of the file)

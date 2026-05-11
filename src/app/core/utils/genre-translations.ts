@@ -1,23 +1,23 @@
 export const GENRE_VI_TO_EN: Record<string, string> = {
-  'Giáo dục':              'Education',
-  'Hóa học':               'Chemistry',
-  'Khoa học Máy tính':     'Computer Science',
-  'Khác':                  'Other',
-  'Kinh tế học':           'Economics',
-  'Lịch sử':               'History',
-  'Great Books Library':           'Great Books Library',
+  'Giáo dục': 'Education',
+  'Hóa học': 'Chemistry',
+  'Khoa học Máy tính': 'Computer Science',
+  'Khác': 'Other',
+  'Kinh tế học': 'Economics',
+  'Lịch sử': 'History',
+  'Great Book Library': 'Great Book Library',
   'Phát minh - Công nghệ': 'Invention & Technology',
-  'Quan điểm - Ý tưởng':   'Opinions & Ideas',
-  'Sinh học':              'Biology',
-  'Thiên văn học':         'Astronomy',
-  'Toán học':              'Mathematics',
-  'Triết học - Tôn giáo':  'Philosophy & Religion',
-  'Tâm lý học':            'Psychology',
-  'Văn học - Nghệ Thuật':  'Literature & Arts',
-  'Vật lý':                'Physics',
-  'Xã hội - Văn hóa':      'Society & Culture',
-  'Y học - Sức khỏe':      'Medicine & Health',
-  'Địa lý':                'Geography',
+  'Quan điểm - Ý tưởng': 'Opinions & Ideas',
+  'Sinh học': 'Biology',
+  'Thiên văn học': 'Astronomy',
+  'Toán học': 'Mathematics',
+  'Triết học - Tôn giáo': 'Philosophy & Religion',
+  'Tâm lý học': 'Psychology',
+  'Văn học - Nghệ Thuật': 'Literature & Arts',
+  'Vật lý': 'Physics',
+  'Xã hội - Văn hóa': 'Society & Culture',
+  'Y học - Sức khỏe': 'Medicine & Health',
+  'Địa lý': 'Geography',
 };
 
 export function translateGenre(viGenre: string, lang: string): string {
@@ -27,12 +27,12 @@ export function translateGenre(viGenre: string, lang: string): string {
 }
 
 const DIFFICULTY_VI_TO_EN: Record<string, string> = {
-  'Cơ bản':              'Basic',
-  'Trung bình':          'Intermediate',
-  'Cao':                 'Advanced',
-  'Nâng cao':            'Advanced',
-  'Chuyên sâu':          'Expert',
-  'Không có thông tin':  'No information',
+  'Cơ bản': 'Basic',
+  'Trung bình': 'Intermediate',
+  'Cao': 'Advanced',
+  'Nâng cao': 'Advanced',
+  'Chuyên sâu': 'Expert',
+  'Không có thông tin': 'No information',
 };
 
 export function translateDifficulty(viDifficulty: string, lang: string): string {
