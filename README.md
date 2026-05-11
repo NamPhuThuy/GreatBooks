@@ -1,80 +1,72 @@
-# Great Articles Library
+# GreatBooks Library
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.1.4.
+Welcome to **GreatBooks Library**, a modern, high-performance web application designed for reading and discovering high-quality books. Built with Angular 21 and styled with Tailwind CSS 4, this project focuses on speed, aesthetics, and a seamless multi-language reading experience.
 
-## Development server
+## 🚀 Features
 
-To start a local development server, run:
+- **Multi-language Support**: Fully localized in Vietnamese (`vi`) and English (`en`) with URL-based language routing.
+- **Dynamic Book Reader**: Renders long-form content using Markdown (via `marked`) with a structured chapter/section hierarchy.
+- **Random Discovery**: Smart "Random Book" feature that allows users to discover content by genre, author, or difficulty.
+- **Interactive Visuals**: Features dynamic particles and high-quality animations using `tsparticles`.
+- **Search & Filtering**: Real-time search across the book index with genre-based filtering.
+- **SEO Optimized**: Semantic HTML and optimized metadata for better discoverability.
+- **Modern Tech Stack**: Angular 21, Tailwind CSS 4, and deployed on Cloudflare Pages.
 
+## 🛠️ Development Setup
+
+### Local Development
+
+1.  **Install dependencies**:
+    ```bash
+    npm install
+    ```
+
+2.  **Start the dev server**:
+    ```bash
+    npm start
+    ```
+    Navigate to `http://localhost:4200/`. The application will automatically reload on changes.
+
+### Production Build
+
+To build the project for production:
 ```bash
-ng serve
+npm run build
+```
+Artifacts are stored in the `dist/` directory.
+
+### Deployment
+
+The project is deployed using **Wrangler** to Cloudflare Pages:
+```bash
+npm run deploy
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+---
 
-## Code scaffolding
+## 📚 Content Management
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+The library's content is managed via static JSON files located in `src/assets/data/`.
 
-```bash
-ng generate component component-name
-```
+### How to Add a New Book
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Content Management
-
-### How to Add a New Article
-
-To add a new article to the library, follow these three steps:
-
-#### 1. Register the Article Metadata
-Add a new entry to `src/assets/data/articles-index.json`. This entry is used for the article list and search.
+#### 1. Register the Book Metadata
+Add a new entry to `src/assets/data/books-index.json`. This file controls the list and search functionality.
 
 ```json
 {
-  "id": "your-article-slug",
+  "id": "your-book-slug",
   "metadata": {
     "titleVi": "Tiêu đề tiếng Việt",
     "titleEn": "English Title",
     "genres": "Genre Name",
-    "difficultyLevel": "Cơ bản / Trung bình / Nâng cao",
-    "tags": ["tag1", "tag2"],
+    "difficultyLevel": "Trung bình",
+    "tags": ["Tag1", "Tag2"],
     "authors": ["Author Name"],
-    "publishedDate": "2024-01-01T00:00:00",
-    "coverImage": "cover.jpg" 
+    "publishedDate": "2024-05-11T00:00:00",
+    "length": 30000,
+    "pageCount": 120,
+    "coverImage": "cover.png"
   },
   "vi": {
     "title": "Tiêu đề tiếng Việt",
@@ -83,33 +75,34 @@ Add a new entry to `src/assets/data/articles-index.json`. This entry is used for
   },
   "en": {
     "title": "English Title",
-    "description": "Short description of the article.",
+    "description": "Short description of the book.",
     "excerpt": "Excerpt..."
   }
 }
 ```
 
-#### 2. Create the Article Folder
-Create a directory at `src/assets/data/articles/your-article-slug/`.
+#### 2. Create the Book Assets
+1.  Create a directory at `src/assets/data/books/your-book-slug/`.
+2.  Place the cover image (`cover.png`) in this folder.
+3.  Create a `book.json` file for the content.
 
-#### 3. Add the Article Content
-Create a file named `article.json` inside that folder with the following structure:
+#### 3. Structured Content (`book.json`)
+The content follows a hierarchical structure of Chapters, Sections, and SubSections:
 
 ```json
 {
-  "id": "your-article-slug",
+  "id": "your-book-slug",
   "vi": {
     "chapters": [
       {
         "title": "Chương 1",
-        "image": "chapter-1-hero.jpg",
         "sections": [
           {
-            "title": "Phần 1",
+            "title": "Phần 1.1",
             "subSections": [
               {
-                "title": "Tiểu mục A",
-                "content": "Nội dung markdown ở đây...",
+                "title": "Tiểu mục 1.1.1",
+                "content": "Nội dung Markdown ở đây...",
                 "image": "diagram.png"
               }
             ]
@@ -124,13 +117,27 @@ Create a file named `article.json` inside that folder with the following structu
 }
 ```
 
-### Adding Images
-1.  **Place Images**: Put all images (covers, diagrams, illustrations) inside the specific article's folder: `src/assets/data/articles/{slug}/`.
-2.  **Reference Images**: 
-    *   In `articles-index.json`, use the `coverImage` field in metadata.
-    *   In `article.json`, use the `image` field in `Chapter`, `Section`, or `SubSection`.
-3.  **Automatic Paths**: The application will automatically prepend the correct path (`/assets/data/articles/{slug}/`) to these filenames.
+### Image Handling
+- **Storage**: Place all images (covers, diagrams) inside `src/assets/data/books/{slug}/`.
+- **Referencing**: Use only the filename in the JSON files. The app automatically resolves the full path.
 
-## Development Resources
-... (rest of the file)
+---
+
+## 🏗️ Project Structure
+
+- `src/app/core`: Services, utilities (like genre translations), and core models.
+- `src/app/features`: Main application modules (Home, Book List, Book Detail, Search).
+- `src/assets/i18n`: Translation files for UI strings.
+- `src/assets/data`: Data source for books and index.
+
+## 🧪 Testing
+
+Run unit tests with Vitest:
+```bash
+npm test
+```
+
+---
+
+*Powered by Ludo School Team.*
 
