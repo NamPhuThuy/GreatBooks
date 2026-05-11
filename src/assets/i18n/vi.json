@@ -1,7 +1,7 @@
 {
   "nav": {
     "home": "Trang chủ",
-    "articles": "Bài viết",
+    "articles": "Sách",
     "search": "Tìm kiếm"
   },
   "common": {
@@ -10,14 +10,14 @@
     "noResults": "Không tìm thấy kết quả",
     "search": "Tìm kiếm...",
     "switchLanguage": "Đọc bằng Tiếng Việt",
-    "allArticles": "Tất cả bài viết",
-    "featuredArticles": "Bài viết nổi bật",
+    "allArticles": "Tất cả sách",
+    "featuredArticles": "Sách nổi bật",
     "browseAll": "Xem tất cả",
-    "totalArticles": "bài viết"
+    "totalArticles": "cuốn sách"
   },
   "home": {
-    "randomArticle": "Bài viết ngẫu nhiên",
-    "browseArticles": "Xem tất cả bài viết",
+    "randomArticle": "Sách ngẫu nhiên",
+    "browseArticles": "Xem tất cả sách",
     "completelyRandom": "Hoàn toàn ngẫu nhiên",
     "randomByGenre": "Ngẫu nhiên theo thể loại",
     "randomByAuthor": "Ngẫu nhiên theo tác giả",
@@ -29,19 +29,24 @@
     "selectDifficulty": "Chọn độ khó"
   },
   "article": {
-    "relatedArticles": "B\u00e0i vi\u1ebft li\u00ean quan",
+    "relatedArticles": "Sách liên quan",
     "readingTime": "ph\u00fat \u0111\u1ecdc",
     "publishedOn": "Xu\u1ea5t b\u1ea3n v\u00e0o",
     "author": "T\u00e1c gi\u1ea3",
     "difficulty": "\u0110\u1ed9 kh\u00f3",
     "genre": "Th\u1ec3 lo\u1ea1i",
-    "tags": "Th\u1ebb",
-    "backToList": "Quay l\u1ea1i danh s\u00e1ch"
+    "readingTime": "phút đọc",
+    "publishedOn": "Xuất bản vào",
+    "author": "Tác giả",
+    "difficulty": "Độ khó",
+    "genre": "Thể loại",
+    "tags": "Thẻ",
+    "backToList": "Quay lại danh sách"
   },
   "search": {
-    "placeholder": "Nh\u1eadp t\u1eeb kh\u00f3a t\u00ecm ki\u1ebfm...",
-    "resultsFor": "K\u1ebft qu\u1ea3 cho",
-    "noResults": "Kh\u00f4ng t\u00ecm th\u1ea5y b\u00e0i vi\u1ebft n\u00e0o ph\u00f9 h\u1ee3p"
+    "placeholder": "Nhập từ khóa tìm kiếm...",
+    "resultsFor": "Kết quả cho",
+    "noResults": "Không tìm thấy cuốn sách nào phù hợp"
   },
   "footer": {
     "copyright": ""

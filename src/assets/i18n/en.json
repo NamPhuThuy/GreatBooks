@@ -1,7 +1,7 @@
 {
   "nav": {
     "home": "Home",
-    "articles": "Articles",
+    "articles": "Books",
     "search": "Search"
   },
   "common": {
@@ -10,14 +10,14 @@
     "noResults": "No results found",
     "search": "Search...",
     "switchLanguage": "Read in English",
-    "allArticles": "All Articles",
-    "featuredArticles": "Featured Articles",
+    "allArticles": "All Books",
+    "featuredArticles": "Featured Books",
     "browseAll": "Browse All",
-    "totalArticles": "articles"
+    "totalArticles": "books"
   },
   "home": {
-    "randomArticle": "Random Article",
-    "browseArticles": "Browse All Articles",
+    "randomArticle": "Random Book",
+    "browseArticles": "Browse All Books",
     "completelyRandom": "Completely Random",
     "randomByGenre": "Random by Genre",
     "randomByAuthor": "Random by Author",
@@ -29,7 +29,7 @@
     "selectDifficulty": "Select difficulty"
   },
   "article": {
-    "relatedArticles": "Related Articles",
+    "relatedArticles": "Related Books",
     "readingTime": "min read",
     "publishedOn": "Published on",
     "author": "Author",
@@ -41,7 +41,7 @@
   "search": {
     "placeholder": "Enter search keywords...",
     "resultsFor": "Results for",
-    "noResults": "No matching articles found"
+    "noResults": "No matching books found"
   },
   "footer": {
     "copyright": ""
