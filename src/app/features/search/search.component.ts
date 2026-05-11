@@ -218,7 +218,7 @@ export class SearchComponent implements OnInit {
   allAuthors = computed(() => {
     const authorSet = new Set<string>();
     this.articleService.articles().forEach(article => {
-      article.metadata.creators.forEach(creator => {
+      article.metadata.authors.forEach(creator => {
         const c = creator.trim();
         if (c) authorSet.add(c);
       });
@@ -253,7 +253,7 @@ export class SearchComponent implements OnInit {
       const matchGenre = !this.activeGenre() ||
         article.metadata.genres.split(',').map(g => g.trim()).includes(this.activeGenre());
       const matchAuthor = !this.activeAuthor() ||
-        article.metadata.creators.some(c => c.trim() === this.activeAuthor());
+        article.metadata.authors.some(c => c.trim() === this.activeAuthor());
       const matchTag = !this.activeTag() ||
         article.metadata.tags.some(t => t.toLowerCase() === this.activeTag().toLowerCase());
 

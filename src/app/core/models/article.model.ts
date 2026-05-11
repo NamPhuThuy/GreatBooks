@@ -1,10 +1,26 @@
+export interface SubSection {
+  title?: string;
+  content: string;
+}
+
+export interface Section {
+  title?: string;
+  subSections: SubSection[];
+}
+
+export interface Chapter {
+  title?: string;
+  sections: Section[];
+}
+
 export interface ArticleLocalizedContent {
   title: string;
   description: string;
   excerpt: string;
   tags: string[];
   genres: string[];
-  content?: string;
+  chapters?: Chapter[];
+  content?: string; // Kept temporarily for backward compatibility during migration
 }
 
 export interface ArticleMetadata {
@@ -13,10 +29,10 @@ export interface ArticleMetadata {
   genres: string;
   difficultyLevel: string;
   tags: string[];
-  creators: string[];
-  createdAt: string;
+  authors: string[];
+  publishedDate: string;
   length: number;
-  page: number;
+  pageCount: number;
 }
 
 export interface ArticleIndexEntry {
@@ -38,11 +54,12 @@ export interface ArticlesIndex {
 
 export interface ArticleContent {
   id: string;
-  vi: { content: string };
-  en: { content: string };
+  vi: { chapters?: Chapter[], content?: string };
+  en: { chapters?: Chapter[], content?: string };
 }
 
 export interface Article extends ArticleIndexEntry {
-  vi: ArticleLocalizedContent & { content?: string };
-  en: ArticleLocalizedContent & { content?: string };
+  vi: ArticleLocalizedContent & { chapters?: Chapter[], content?: string };
+  en: ArticleLocalizedContent & { chapters?: Chapter[], content?: string };
 }
+

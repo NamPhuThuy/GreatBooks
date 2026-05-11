@@ -33,7 +33,7 @@ export class ArticleService {
         return true;
       })
       .sort((a, b) =>
-        new Date(b.metadata.createdAt).getTime() - new Date(a.metadata.createdAt).getTime()
+        new Date(b.metadata.publishedDate).getTime() - new Date(a.metadata.publishedDate).getTime()
       );
   });
   readonly totalArticles = computed(() => this.indexData().meta.totalArticles);
@@ -122,17 +122,17 @@ export class ArticleService {
 
   getUniqueCreators() {
     return computed(() => {
-      const creators = new Set<string>();
+      const authors = new Set<string>();
       this.articles().forEach(a => {
-        a.metadata.creators?.forEach(c => creators.add(c.trim()));
+        a.metadata.authors?.forEach(c => authors.add(c.trim()));
       });
-      return Array.from(creators).sort();
+      return Array.from(authors).sort();
     });
   }
 
   getArticlesByCreator(creator: string) {
     return this.articles().filter(a =>
-      a.metadata.creators?.some(c => c.trim() === creator)
+      a.metadata.authors?.some(c => c.trim() === creator)
     );
   }
 

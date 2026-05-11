@@ -36,7 +36,7 @@ import { translateGenre, translateDifficulty } from '../../core/utils/genre-tran
             </span>
           }
           <span class="text-xs text-gray-400 dark:text-gray-500 ml-auto">
-            {{ formatDate(article().metadata.createdAt) }}
+            {{ formatDate(article().metadata.publishedDate) }}
           </span>
         </div>
 

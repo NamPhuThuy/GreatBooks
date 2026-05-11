@@ -69,13 +69,13 @@ import { extractReferences, formatReferencesSection } from '../../core/utils/ref
 
           <!-- Meta Info -->
           <div class="flex flex-wrap items-center gap-4 text-sm text-gray-500 dark:text-gray-400 pb-6 border-b border-gray-200 dark:border-gray-800">
-            @if (article()!.metadata.creators.length > 0) {
+            @if (article()!.metadata.authors.length > 0) {
               <div class="flex items-center gap-1.5">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                 </svg>
-                <span>{{ article()!.metadata.creators.join(', ') }}</span>
+                <span>{{ article()!.metadata.authors.join(', ') }}</span>
               </div>
             }
 
@@ -84,7 +84,7 @@ import { extractReferences, formatReferencesSection } from '../../core/utils/ref
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
               </svg>
-              <span>{{ langService.t('article.publishedOn') }}: {{ formatDate(article()!.metadata.createdAt) }}</span>
+              <span>{{ langService.t('article.publishedOn') }}: {{ formatDate(article()!.metadata.publishedDate) }}</span>
             </div>
 
             <div class="flex items-center gap-1.5">
@@ -134,10 +134,26 @@ import { extractReferences, formatReferencesSection } from '../../core/utils/ref
             </div>
           }
 
-          <!-- Article Content -->
+          <!-- Article Content (Chapters, Sections, Subsections) -->
           <article class="prose prose-lg dark:prose-invert max-w-none" (click)="onContentClick($event)">
             @if (articleContent()) {
-              <div [innerHTML]="articleContent()! | formatContent | markdown | safeHtml"></div>
+              @for (chapter of articleContent()!.chapters; track chapter.title) {
+                @if (chapter.title) {
+                  <h2 class="text-3xl font-bold mt-10 mb-6 text-gray-900 dark:text-gray-100">{{ chapter.title }}</h2>
+                }
+                @for (section of chapter.sections; track section.title) {
+                  @if (section.title) {
+                    <h3 class="text-2xl font-semibold mt-8 mb-4 text-gray-800 dark:text-gray-200">{{ section.title }}</h3>
+                  }
+                  @for (sub of section.subSections; track sub.title) {
+                    @if (sub.title) {
+                      <h4 class="text-xl font-medium mt-6 mb-3 text-gray-800 dark:text-gray-300">{{ sub.title }}</h4>
+                    }
+                    <div [innerHTML]="sub.content | formatContent | markdown | safeHtml"></div>
+                  }
+                }
+              }
+
               @if (referencesHtml()) {
                 <div [innerHTML]="referencesHtml()! | safeHtml"></div>
               }
@@ -186,28 +202,69 @@ export class ArticleDetailComponent implements OnInit {
     const a = this.article();
     if (!a) return null;
     const lang = this.lang();
-    const content = a[lang]?.content;
-    if (!content) return null;
+    
+    // Support both old 'content' and new 'chapters' structure
+    let chapters = a[lang]?.chapters;
+    if (!chapters && a[lang]?.content) {
+      chapters = [{
+        title: lang === 'vi' ? 'Chương 1' : 'Chapter 1',
+        sections: [{
+          title: lang === 'vi' ? 'Phần 1' : 'Section 1',
+          subSections: [{ content: a[lang]!.content! }]
+        }]
+      }];
+    }
+    
+    if (!chapters) return null;
 
-    const { body, references } = extractReferences(content);
+    let allReferences: any[] = [];
+    
+    // Deep copy chapters to avoid mutating the signal data directly
+    const processedChapters = JSON.parse(JSON.stringify(chapters));
+    
+    // Process each subsection's content
+    for (const chapter of processedChapters) {
+      for (const section of chapter.sections) {
+        for (const sub of section.subSections) {
+          if (sub.content) {
+            const { body, references } = extractReferences(sub.content);
+            sub.content = body;
+            allReferences = [...allReferences, ...references];
+          }
+        }
+      }
+    }
 
-    let refs = references;
-    if (refs.length === 0) {
+    if (allReferences.length === 0) {
       const otherLang = lang === 'vi' ? 'en' : 'vi';
-      const otherContent = a[otherLang]?.content;
-      if (otherContent) {
-        refs = extractReferences(otherContent).references;
+      let otherChapters = a[otherLang]?.chapters;
+      
+      if (!otherChapters && a[otherLang]?.content) {
+        otherChapters = [{ sections: [{ subSections: [{ content: a[otherLang]!.content! }] }] }];
+      }
+      
+      if (otherChapters) {
+        for (const chapter of otherChapters) {
+          for (const section of chapter.sections) {
+            for (const sub of section.subSections) {
+              if (sub.content) {
+                const { references } = extractReferences(sub.content);
+                allReferences = [...allReferences, ...references];
+              }
+            }
+          }
+        }
       }
     }
 
     const title = lang === 'vi' ? 'Tham khảo' : 'References';
     return {
-      body,
-      referencesHtml: refs.length > 0 ? formatReferencesSection(refs, title) : null,
+      chapters: processedChapters,
+      referencesHtml: allReferences.length > 0 ? formatReferencesSection(allReferences, title) : null,
     };
   });
 
-  articleContent  = computed(() => this.parsedArticle()?.body ?? null);
+  articleContent  = computed(() => this.parsedArticle() ? { chapters: this.parsedArticle()!.chapters } : null);
   referencesHtml  = computed(() => this.parsedArticle()?.referencesHtml ?? null);
 
   readingTime = computed(() => {

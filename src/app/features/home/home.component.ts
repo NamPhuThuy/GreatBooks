@@ -229,7 +229,7 @@ import { ArticleCardComponent } from '../article-list/article-card.component';
                   [value]="selectedCreator()"
                   (change)="onCreatorChange(asInputValue($event))">
                   <option value="">{{ langService.t('home.selectAuthor') }}</option>
-                  @for (creator of creators(); track creator) {
+                  @for (creator of authors(); track creator) {
                     <option [value]="creator">{{ displayCreator(creator) }}</option>
                   }
                 </select>
@@ -306,7 +306,7 @@ export class HomeComponent implements OnInit {
   genreCount = computed(() => this.articleService.getUniqueGenres()().length);
 
   genres = computed(() => this.articleService.getUniqueGenres()());
-  creators = computed(() => this.articleService.getUniqueCreators()());
+  authors = computed(() => this.articleService.getUniqueCreators()());
   difficulties = computed(() => this.articleService.getUniqueDifficulties()());
 
   showRandomMenu = signal(false);

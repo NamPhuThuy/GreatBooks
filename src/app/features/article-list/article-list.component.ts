@@ -89,17 +89,17 @@ import { translateGenre } from '../../core/utils/genre-translations';
               ←
             </button>
 
-            @for (page of visiblePages(); track page) {
-              @if (page === -1) {
+            @for (pageCount of visiblePages(); track pageCount) {
+              @if (pageCount === -1) {
                 <span class="px-2 text-gray-400 dark:text-gray-500">...</span>
               } @else {
                 <button
-                  (click)="goToPage(page)"
-                  [class]="page === currentPage()
+                  (click)="goToPage(pageCount)"
+                  [class]="pageCount === currentPage()
                     ? 'bg-blue-600 text-white border-blue-600'
                     : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'"
                   class="px-3 py-2 rounded-lg border text-sm font-medium transition-colors cursor-pointer">
-                  {{ page }}
+                  {{ pageCount }}
                 </button>
               }
             }
@@ -139,7 +139,7 @@ export class ArticleListComponent implements OnInit {
   searchQuery = signal('');
   selectedGenre = signal('');
   currentPage = signal(1);
-  readonly pageSize = 12;
+  readonly pageCountSize = 12;
 
   lang = this.langService.currentLang;
 
@@ -174,31 +174,31 @@ export class ArticleListComponent implements OnInit {
   });
 
   totalPages = computed(() =>
-    Math.max(1, Math.ceil(this.filteredArticles().length / this.pageSize))
+    Math.max(1, Math.ceil(this.filteredArticles().length / this.pageCountSize))
   );
 
   paginatedArticles = computed(() => {
-    const start = (this.currentPage() - 1) * this.pageSize;
-    return this.filteredArticles().slice(start, start + this.pageSize);
+    const start = (this.currentPage() - 1) * this.pageCountSize;
+    return this.filteredArticles().slice(start, start + this.pageCountSize);
   });
 
   visiblePages = computed(() => {
     const total = this.totalPages();
     const current = this.currentPage();
-    const pages: number[] = [];
+    const pageCounts: number[] = [];
 
     if (total <= 7) {
-      for (let i = 1; i <= total; i++) pages.push(i);
+      for (let i = 1; i <= total; i++) pageCounts.push(i);
     } else {
-      pages.push(1);
-      if (current > 3) pages.push(-1);
+      pageCounts.push(1);
+      if (current > 3) pageCounts.push(-1);
       const start = Math.max(2, current - 1);
       const end = Math.min(total - 1, current + 1);
-      for (let i = start; i <= end; i++) pages.push(i);
-      if (current < total - 2) pages.push(-1);
-      pages.push(total);
+      for (let i = start; i <= end; i++) pageCounts.push(i);
+      if (current < total - 2) pageCounts.push(-1);
+      pageCounts.push(total);
     }
-    return pages;
+    return pageCounts;
   });
 
   ngOnInit(): void {
@@ -219,9 +219,9 @@ export class ArticleListComponent implements OnInit {
     this.currentPage.set(1);
   }
 
-  goToPage(page: number): void {
-    if (page >= 1 && page <= this.totalPages()) {
-      this.currentPage.set(page);
+  goToPage(pageCount: number): void {
+    if (pageCount >= 1 && pageCount <= this.totalPages()) {
+      this.currentPage.set(pageCount);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }
