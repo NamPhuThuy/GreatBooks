@@ -2,9 +2,40 @@
     "meta": {
         "generatedAt": "2026-02-15T22:39:43.692284",
         "version": "1.0",
-        "totalArticles": 1
+        "totalArticles": 2
     },
     "articles": [
+        {
+            "id": "bounce-balls-walls-and-bodies-in-games-and-play",
+            "metadata": {
+                "titleVi": "Bounce: Bóng, Tường và Cơ thể trong Trò chơi",
+                "titleEn": "Bounce: Balls, Walls, and Bodies in Games and Play",
+                "genres": "Thiết kế Game - Vật lý",
+                "difficultyLevel": "Trung bình",
+                "tags": [
+                    "Vật lý",
+                    "Thiết kế",
+                    "Cơ thể"
+                ],
+                "authors": [
+                    "Great Books Library"
+                ],
+                "publishedDate": "2024-05-11T00:00:00",
+                "length": 30000,
+                "pageCount": 120,
+                "coverImage": "cover_bounce.png"
+            },
+            "vi": {
+                "title": "Bounce: Bóng, Tường và Cơ thể trong Trò chơi",
+                "description": "Khám phá sự tương tác giữa vật lý và cảm giác chơi game qua các yếu tố cơ bản nhất.",
+                "excerpt": "Tại sao cảm giác nảy của một quả bóng lại quan trọng đến thế trong game?"
+            },
+            "en": {
+                "title": "Bounce: Balls, Walls, and Bodies in Games and Play",
+                "description": "Exploring the interaction between physics and the feel of play through the most basic elements.",
+                "excerpt": "Why does the bounce of a ball matter so much in game design?"
+            }
+        },
         {
             "id": "game-after-a-culture-study-of-video-game-afterlife",
             "metadata": {
