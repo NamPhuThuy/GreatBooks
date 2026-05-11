@@ -1,15 +1,18 @@
 export interface SubSection {
   title?: string;
   content: string;
+  image?: string;
 }
 
 export interface Section {
   title?: string;
+  image?: string;
   subSections: SubSection[];
 }
 
 export interface Chapter {
   title?: string;
+  image?: string;
   sections: Section[];
 }
 
@@ -33,6 +36,7 @@ export interface ArticleMetadata {
   publishedDate: string;
   length: number;
   pageCount: number;
+  coverImage?: string;
 }
 
 export interface ArticleIndexEntry {

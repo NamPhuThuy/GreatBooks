@@ -15,7 +15,7 @@ export class ArticleService {
   private http = inject(HttpClient);
   private readonly BASE_PATH = '/assets/data';
 
-  private index$ = this.http.get<ArticlesIndex>(`${this.BASE_PATH}/articles-index.json`).pipe(
+  private index$ = this.http.get<ArticlesIndex>(`${this.BASE_PATH}/books-index.json`).pipe(
     catchError(() => of({ meta: { totalArticles: 0 }, articles: [] } as ArticlesIndex)),
     shareReplay(1)
   );
@@ -165,7 +165,7 @@ export class ArticleService {
   private loadArticleContent(slug: string): Observable<ArticleContent | null> {
     if (!this.contentCache.has(slug)) {
       const content$ = this.http
-        .get<ArticleContent>(`${this.BASE_PATH}/articles/${slug}.json`)
+        .get<ArticleContent>(`${this.BASE_PATH}/books/${slug}/book.json`)
         .pipe(
           catchError(() => of(null)),
           shareReplay(1)

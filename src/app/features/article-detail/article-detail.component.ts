@@ -141,13 +141,28 @@ import { extractReferences, formatReferencesSection } from '../../core/utils/ref
                 @if (chapter.title) {
                   <h2 class="text-3xl font-bold mt-10 mb-6 text-gray-900 dark:text-gray-100">{{ chapter.title }}</h2>
                 }
+                @if (chapter.image) {
+                  <div class="my-8 overflow-hidden rounded-xl shadow-lg">
+                    <img [src]="'/assets/data/books/' + article()?.id + '/' + chapter.image" class="w-full h-auto" />
+                  </div>
+                }
                 @for (section of chapter.sections; track section.title) {
                   @if (section.title) {
                     <h3 class="text-2xl font-semibold mt-8 mb-4 text-gray-800 dark:text-gray-200">{{ section.title }}</h3>
                   }
+                  @if (section.image) {
+                    <div class="my-6 overflow-hidden rounded-lg shadow-md">
+                      <img [src]="'/assets/data/books/' + article()?.id + '/' + section.image" class="w-full h-auto" />
+                    </div>
+                  }
                   @for (sub of section.subSections; track sub.title) {
                     @if (sub.title) {
                       <h4 class="text-xl font-medium mt-6 mb-3 text-gray-800 dark:text-gray-300">{{ sub.title }}</h4>
+                    }
+                    @if (sub.image) {
+                      <div class="my-4 overflow-hidden rounded shadow-sm">
+                        <img [src]="'/assets/data/books/' + article()?.id + '/' + sub.image" class="w-full h-auto" />
+                      </div>
                     }
                     <div [innerHTML]="sub.content | formatContent | markdown | safeHtml"></div>
                   }

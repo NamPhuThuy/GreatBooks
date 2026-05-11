@@ -16,8 +16,15 @@ import { translateGenre, translateDifficulty } from '../../core/utils/genre-tran
       class="group block bg-white dark:bg-gray-800 rounded-xl shadow-sm
               border border-gray-200 dark:border-gray-700
               hover:shadow-md hover:border-blue-200 dark:hover:border-blue-700
-              transition-all duration-200 h-full"
+              transition-all duration-200 h-full overflow-hidden"
     >
+      @if (article().metadata.coverImage) {
+        <div class="relative aspect-[16/9] overflow-hidden">
+          <img [src]="'/assets/data/books/' + article().id + '/' + article().metadata.coverImage"
+               [alt]="article()[lang()].title"
+               class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" />
+        </div>
+      }
       <div class="p-5 sm:p-6 flex flex-col h-full">
         <!-- Meta info -->
         <div class="flex items-center gap-2 mb-3 flex-wrap">
