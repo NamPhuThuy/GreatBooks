@@ -206,7 +206,7 @@ export class ArticleListComponent implements OnInit {
       const lang = params.get('lang');
       if (lang) this.langService.setLanguageFromRoute(lang);
     });
-    this.titleService.setTitle(`${this.langService.t('nav.articles')} | Monster Box`);
+    this.titleService.setTitle(`${this.langService.t('nav.articles')} | Great Books Library`);
   }
 
   onSearchChange(value: string): void {

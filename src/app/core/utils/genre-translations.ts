@@ -5,7 +5,7 @@ export const GENRE_VI_TO_EN: Record<string, string> = {
   'Khác':                  'Other',
   'Kinh tế học':           'Economics',
   'Lịch sử':               'History',
-  'Monster Box':           'Monster Box',
+  'Great Books Library':           'Great Books Library',
   'Phát minh - Công nghệ': 'Invention & Technology',
   'Quan điểm - Ý tưởng':   'Opinions & Ideas',
   'Sinh học':              'Biology',

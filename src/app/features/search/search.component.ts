@@ -193,7 +193,7 @@ export class SearchComponent implements OnInit {
       }
     });
 
-    this.titleService.setTitle(`${this.langService.t('nav.search')} | Monster Box`);
+    this.titleService.setTitle(`${this.langService.t('nav.search')} | Great Books Library`);
   }
 
   breadcrumbs = computed<Breadcrumb[]>(() => [

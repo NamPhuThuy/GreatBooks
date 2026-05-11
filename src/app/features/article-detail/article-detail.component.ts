@@ -282,7 +282,7 @@ export class ArticleDetailComponent implements OnInit {
       const a = this.article();
       if (a) {
         const lang = this.lang();
-        this.titleService.setTitle(`${a[lang].title} | Monster Box`);
+        this.titleService.setTitle(`${a[lang].title} | Great Books Library`);
         this.metaService.updateTag({ name: 'description',      content: a[lang].description });
         this.metaService.updateTag({ property: 'og:title',       content: a[lang].title });
         this.metaService.updateTag({ property: 'og:description', content: a[lang].description });
