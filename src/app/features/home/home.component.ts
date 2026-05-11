@@ -22,7 +22,7 @@ import { ArticleCardComponent } from '../article-list/article-card.component';
       <section class="relative text-white  h-[500px] md:h-[400px] flex items-center">
         <div
           class="absolute inset-0 bg-cover bg-center"
-          style="background-image: url('../../../assets/images/banner.jpg');"
+          style="background-image: url('../../../assets/images/banner_retro.png');"
         ></div>
 
         <div class="absolute inset-0
