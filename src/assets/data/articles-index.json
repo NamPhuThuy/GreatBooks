@@ -2,9 +2,9 @@
     "meta": {
         "generatedAt": "2026-02-15T22:39:43.692284",
         "version": "1.0",
-        "totalBooks": 442
+        "totalArticles": 442
     },
-    "books": [
+    "articles": [
         {
             "id": "bi-kich-cua-nguoi-tre-tro-nen-dang-ghet-du-ban-than-khong-he-muon-the",
             "metadata": {
