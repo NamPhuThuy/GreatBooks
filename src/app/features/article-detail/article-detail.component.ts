@@ -164,7 +164,7 @@ import { extractReferences, formatReferencesSection } from '../../core/utils/ref
                         <img [src]="'/assets/data/books/' + article()?.id + '/' + sub.image" class="w-full h-auto" />
                       </div>
                     }
-                    <div [innerHTML]="sub.content | formatContent | markdown | safeHtml"></div>
+                    <div [innerHTML]="sub.content | formatContent: article()?.id | markdown | safeHtml"></div>
                   }
                 }
               }

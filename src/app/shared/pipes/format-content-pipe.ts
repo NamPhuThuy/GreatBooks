@@ -6,7 +6,7 @@ import { Pipe, PipeTransform } from '@angular/core';
 })
 export class FormatContentPipe implements PipeTransform {
 
-  transform(content: string | null): string {
+  transform(content: string | null, slug?: string): string {
     if (!content) return '';
 
     let result = content;
@@ -14,8 +14,19 @@ export class FormatContentPipe implements PipeTransform {
     // 1. Normalize line breaks
     result = result.replace(/\r\n/g, '\n');
 
-    // 2. Convert numbered headings
-    // "1. Title" → "## 1. Title"
+    // 2. Fix image paths if slug is provided
+    // Converts ![alt](image.jpg) to ![alt](/assets/data/books/slug/image.jpg)
+    if (slug) {
+      result = result.replace(/!\[(.*?)\]\((.*?)\)/g, (match, alt, path) => {
+        if (!path.startsWith('http') && !path.startsWith('/') && !path.startsWith('./')) {
+          return `![${alt}](/assets/data/books/${slug}/${path})`;
+        }
+        return match;
+      });
+    }
+
+    // 3. Convert numbered headings
+    // "1. Title" → "### 1. Title"
     result = result.replace(
       /(^|\n)(\d+)\.\s(.+)/g,
       (_, start, num, title) => {
@@ -23,26 +34,10 @@ export class FormatContentPipe implements PipeTransform {
       }
     );
 
-    // ================================
-    // 3. Convert short title lines → heading
-    // Ví dụ:
-    // "Về ngôn ngữ."
-    // ================================
-    // result = result.replace(
-    //   /(^|\n)([A-ZÀ-Ỹ][^\n]{3,60})\.\n/g,
-    //   (_, start, title) => {
-    //     return `${start}## ${title}\n`;
-    //   }
-    // );
-
-    // 4. Convert quotes
-    // “text” → > text
-    // result = result.replace(/“(.+?)”/g, '> $1');
-
-    // 5. Fix spacing (đọc cho dễ)
+    // 4. Fix spacing
     result = result.replace(/\n{3,}/g, '\n\n');
 
-    // 6. Add spacing before headings
+    // 5. Add spacing before headings
     result = result.replace(/\n(## )/g, '\n\n$1');
 
     return result.trim();
