@@ -24,7 +24,7 @@ import { paginateBook } from '../../core/utils/book-paginator';
     RelatedArticlesComponent,
   ],
   template: `
-    <div class="mx-auto px-4 sm:px-6 lg:px-8 pt-20 md:pt-28 pb-12 transition-all duration-500">
+    <div class="mx-auto px-4 sm:px-6 lg:px-8 pt-16 md:pt-20 pb-8 transition-all duration-500">
 
       @if (loadError()) {
         <!-- Error state -->
@@ -122,8 +122,7 @@ import { paginateBook } from '../../core/utils/book-paginator';
           
           <!-- Book Viewport -->
           <div class="book-viewport relative w-full flex items-center justify-center overflow-hidden" 
-               #bookViewport
-               [style.height]="activeScale() === 1.0 ? '65vh' : (710 * activeScale()) + 'px'">
+               #bookViewport>
             
             <!-- Scaleable Pages Wrapper with Tap Zones for Easy Navigation -->
             <div class="relative flex items-center justify-center gap-0"
@@ -134,7 +133,7 @@ import { paginateBook } from '../../core/utils/book-paginator';
               <div class="book-pages-wrapper relative flex items-center justify-center gap-0 bg-[#e5e1d7] dark:bg-[#1a1918] p-2 md:p-5 rounded-2xl shadow-2xl border border-[#d2cab8] dark:border-[#2f2e2d] transition-all duration-300">
                 <!-- SINGLE PAGE LAYOUT -->
                 @if (leftPage()) {
-                  <div class="book-page-sheet single-page flex flex-col justify-between bg-[#faf8f5] dark:bg-[#232220] text-[#2c2b29] dark:text-[#e4e2df] shadow-[0_10px_25px_rgba(0,0,0,0.15)] relative p-7 select-text">
+                  <div class="book-page-sheet single-page flex flex-col justify-between bg-[#faf8f5] dark:bg-[#232220] text-[#2c2b29] dark:text-[#e4e2df] shadow-[0_10px_25px_rgba(0,0,0,0.15)] relative p-4 md:p-6 select-text">
                     
                     <!-- Left Tap Zone Overlay (Click left 15% to go back) -->
                     <div (click)="prevPage(); $event.stopPropagation()" 
@@ -159,9 +158,9 @@ import { paginateBook } from '../../core/utils/book-paginator';
                     </div>
 
                     <!-- TOP HEADER -->
-                    <div class="page-header flex justify-between items-center text-xs text-gray-400 dark:text-gray-500 border-b border-gray-200/50 dark:border-gray-800/40 pb-2 mb-4 font-mono select-none">
+                    <div class="page-header flex justify-between items-center text-[10px] uppercase tracking-wider text-gray-400 dark:text-gray-500 border-b border-gray-200/40 dark:border-gray-800/30 pb-1 mb-2 font-mono select-none">
                       <span>Trang {{ leftPage()!.pageNumber }}</span>
-                      <span class="truncate max-w-[140px] font-medium">{{ leftPage()!.chapterTitle }}</span>
+                      <span class="truncate max-w-[180px] font-semibold">{{ leftPage()!.chapterTitle }}</span>
                     </div>
 
                     <!-- CONTENT -->
@@ -170,8 +169,8 @@ import { paginateBook } from '../../core/utils/book-paginator';
                     </div>
 
                     <!-- BOTTOM FOOTER -->
-                    <div class="page-footer flex justify-between items-center text-xs text-gray-400 dark:text-gray-500 border-t border-gray-200/50 dark:border-gray-800/40 pt-2 mt-4 font-mono select-none">
-                      <span class="font-medium max-w-[65%] leading-tight text-left break-words">{{ article()![lang()].title }}</span>
+                    <div class="page-footer flex justify-between items-center text-[10px] uppercase tracking-wider text-gray-400 dark:text-gray-500 border-t border-gray-200/40 dark:border-gray-800/30 pt-1 mt-2 font-mono select-none">
+                      <span class="font-semibold max-w-[70%] leading-tight text-left break-words">{{ article()![lang()].title }}</span>
                       <span>Trang {{ leftPage()!.pageNumber }}</span>
                     </div>
 
@@ -263,6 +262,17 @@ import { paginateBook } from '../../core/utils/book-paginator';
     </div>
   `,
   styles: [`
+    .book-viewport {
+      height: 90vh !important;
+      transition: all 0.3s ease;
+    }
+    
+    @media (max-width: 767px) {
+      .book-viewport {
+        height: 65vh !important;
+      }
+    }
+
     .book-container {
       perspective: 1500px;
     }
@@ -280,8 +290,8 @@ import { paginateBook } from '../../core/utils/book-paginator';
     }
     
     .book-page-sheet {
-      width: 484px;
-      height: 671px;
+      width: 580px; /* 20% wider than 484px */
+      height: 86vh; /* Takes 86% of the PC screen height! */
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -445,7 +455,7 @@ export class ArticleDetailComponent implements OnInit, AfterViewInit {
     const a = this.article();
     if (!a) return null;
     const lang = this.lang();
-    
+
     let chapters = a[lang]?.chapters;
     if (!chapters && a[lang]?.content) {
       chapters = [{
@@ -456,12 +466,12 @@ export class ArticleDetailComponent implements OnInit, AfterViewInit {
         }]
       }];
     }
-    
+
     if (!chapters) return null;
 
     let allReferences: any[] = [];
     const processedChapters = JSON.parse(JSON.stringify(chapters));
-    
+
     for (const chapter of processedChapters) {
       for (const section of chapter.sections) {
         for (const sub of section.subSections) {
@@ -477,11 +487,11 @@ export class ArticleDetailComponent implements OnInit, AfterViewInit {
     if (allReferences.length === 0) {
       const otherLang = lang === 'vi' ? 'en' : 'vi';
       let otherChapters = a[otherLang]?.chapters;
-      
+
       if (!otherChapters && a[otherLang]?.content) {
         otherChapters = [{ sections: [{ subSections: [{ content: a[otherLang]!.content! }] }] }];
       }
-      
+
       if (otherChapters) {
         for (const chapter of otherChapters) {
           for (const section of chapter.sections) {
@@ -517,11 +527,11 @@ export class ArticleDetailComponent implements OnInit, AfterViewInit {
     const p = this.pages();
     const idx = this.currentPageIndex();
     if (p.length === 0) return null;
-    
+
     if (!this.isDoublePage()) {
       return p[idx] || null;
     }
-    
+
     const leftIdx = idx - (idx % 2);
     return p[leftIdx] || null;
   });
@@ -530,7 +540,7 @@ export class ArticleDetailComponent implements OnInit, AfterViewInit {
     const p = this.pages();
     const idx = this.currentPageIndex();
     if (p.length === 0 || !this.isDoublePage()) return null;
-    
+
     const leftIdx = idx - (idx % 2);
     const rightIdx = leftIdx + 1;
     return p[rightIdx] || null;
@@ -669,34 +679,32 @@ export class ArticleDetailComponent implements OnInit, AfterViewInit {
   calculateScale(): void {
     if (!this.bookViewport) return;
     const width = this.bookViewport.nativeElement.clientWidth;
-    
+
     if (width < 768) {
       // On mobile, lock scale factor to 1.0 since dimensions are natively styled to 96vw and 65vh via CSS!
       this.calculatedScale.set(1.0);
       return;
     }
 
-    const height = 710; 
-    const targetPageWidth = 484; 
-    const targetPageHeight = 671; 
-    
-    // Desktop has a flanking zoom column on the right side (72px allowance)
+    const targetPageWidth = 580; // 20% wider than 484px
     const flankingAllowance = 72;
     const targetBookWidth = targetPageWidth + flankingAllowance;
-    
-    // Scale down comfortably so both page card and all controls fit beautifully
-    const scaleX = (width * 0.94) / targetBookWidth;
-    const scaleY = (height * 0.94) / targetPageHeight;
-    
-    const finalScale = Math.min(scaleX, scaleY);
-    this.calculatedScale.set(Math.max(0.35, Math.min(1.5, finalScale)));
+
+    if (width < targetBookWidth) {
+      // Scale down proportionally on smaller screens / tablets
+      const scaleX = (width * 0.94) / targetBookWidth;
+      this.calculatedScale.set(Math.max(0.5, scaleX));
+    } else {
+      // Keep perfect native scale!
+      this.calculatedScale.set(1.0);
+    }
   }
 
   nextPage(): void {
     const pages = this.pages();
     const total = pages.length;
     const current = this.currentPageIndex();
-    
+
     if (this.isDoublePage()) {
       const leftIdx = current - (current % 2);
       if (leftIdx + 2 < total) {
@@ -711,7 +719,7 @@ export class ArticleDetailComponent implements OnInit, AfterViewInit {
 
   prevPage(): void {
     const current = this.currentPageIndex();
-    
+
     if (this.isDoublePage()) {
       const leftIdx = current - (current % 2);
       if (leftIdx - 2 >= 0) {
@@ -728,7 +736,7 @@ export class ArticleDetailComponent implements OnInit, AfterViewInit {
     const pages = this.pages();
     const total = pages.length;
     const current = this.currentPageIndex();
-    
+
     if (this.isDoublePage()) {
       const leftIdx = current - (current % 2);
       return leftIdx + 2 >= total;
@@ -753,12 +761,12 @@ export class ArticleDetailComponent implements OnInit, AfterViewInit {
   getReadingPercent(): number {
     const total = this.totalPages();
     if (total <= 1) return 100;
-    
+
     let currentRead = this.currentPageIndex() + 1;
     if (this.isDoublePage() && this.rightPage()) {
       currentRead = this.rightPage()!.pageNumber;
     }
-    
+
     return Math.round((currentRead / total) * 100);
   }
 
