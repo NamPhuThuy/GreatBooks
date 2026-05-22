@@ -123,7 +123,7 @@ import { paginateBook } from '../../core/utils/book-paginator';
           <!-- Book Viewport -->
           <div class="book-viewport relative w-full flex items-center justify-center overflow-hidden" 
                #bookViewport
-               [style.height.px]="710 * activeScale()">
+               [style.height]="activeScale() === 1.0 ? '65vh' : (710 * activeScale()) + 'px'">
             
             <!-- Scaleable Pages Wrapper with Tap Zones for Easy Navigation -->
             <div class="relative flex items-center justify-center gap-0"
@@ -136,10 +136,10 @@ import { paginateBook } from '../../core/utils/book-paginator';
                 @if (leftPage()) {
                   <div class="book-page-sheet single-page flex flex-col justify-between bg-[#faf8f5] dark:bg-[#232220] text-[#2c2b29] dark:text-[#e4e2df] shadow-[0_10px_25px_rgba(0,0,0,0.15)] relative p-7 select-text">
                     
-                    <!-- Left Tap Zone Overlay (Click left 50% to go back) -->
+                    <!-- Left Tap Zone Overlay (Click left 15% to go back) -->
                     <div (click)="prevPage(); $event.stopPropagation()" 
                          [class.pointer-events-none]="currentPageIndex() === 0"
-                         class="absolute inset-y-0 left-0 w-1/2 cursor-w-resize z-20 group/tap flex items-center justify-start pl-4 select-none">
+                         class="absolute inset-y-0 left-0 w-[15%] cursor-w-resize z-20 group/tap flex items-center justify-start pl-4 select-none">
                       <div class="w-9 h-9 rounded-full bg-black/5 dark:bg-white/5 text-gray-500 flex items-center justify-center opacity-0 group-hover/tap:opacity-100 transition duration-250 border border-gray-200/50 dark:border-gray-700/50 shadow-sm">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
@@ -147,10 +147,10 @@ import { paginateBook } from '../../core/utils/book-paginator';
                       </div>
                     </div>
 
-                    <!-- Right Tap Zone Overlay (Click right 50% to go forward) -->
+                    <!-- Right Tap Zone Overlay (Click right 15% to go forward) -->
                     <div (click)="nextPage(); $event.stopPropagation()" 
                          [class.pointer-events-none]="isAtEnd()"
-                         class="absolute inset-y-0 right-0 w-1/2 cursor-e-resize z-20 group/tap flex items-center justify-end pr-4 select-none">
+                         class="absolute inset-y-0 right-0 w-[15%] cursor-e-resize z-20 group/tap flex items-center justify-end pr-4 select-none">
                       <div class="w-9 h-9 rounded-full bg-black/5 dark:bg-white/5 text-gray-500 flex items-center justify-center opacity-0 group-hover/tap:opacity-100 transition duration-250 border border-gray-200/50 dark:border-gray-700/50 shadow-sm">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
@@ -271,18 +271,32 @@ import { paginateBook } from '../../core/utils/book-paginator';
       box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.3), 
                   inset 0 0 20px rgba(255, 255, 255, 0.05);
     }
+
+    @media (max-width: 767px) {
+      .book-pages-wrapper {
+        padding: 0 !important;
+        border-radius: 12px !important;
+      }
+    }
     
     .book-page-sheet {
       width: 484px;
       height: 671px;
       display: flex;
       flex-direction: column;
-      justify-between: space-between;
+      justify-content: space-between;
       border-radius: 4px;
       box-sizing: border-box;
       transition: all 0.3s ease;
       background-color: #faf8f5;
       color: #2c2b29;
+    }
+
+    @media (max-width: 767px) {
+      .book-page-sheet {
+        width: 96vw !important;
+        height: 65vh !important;
+      }
     }
 
     .dark .book-page-sheet {
@@ -313,32 +327,38 @@ import { paginateBook } from '../../core/utils/book-paginator';
     }
 
     .page-content-wrapper {
-      scrollbar-width: thin;
-      scrollbar-color: rgba(59, 130, 246, 0.45) transparent;
-      overflow-y: auto;
-      overflow-x: hidden;
+      scrollbar-width: thin !important;
+      scrollbar-color: rgba(156, 163, 175, 0.55) rgba(229, 231, 235, 0.2) !important;
+      overflow-y: scroll !important;
+      overflow-x: hidden !important;
       padding-right: 0.5rem;
     }
     
     .dark .page-content-wrapper {
-      scrollbar-color: rgba(59, 130, 246, 0.45) transparent;
+      scrollbar-color: rgba(156, 163, 175, 0.45) rgba(31, 41, 55, 0.2) !important;
     }
 
     .page-content-wrapper::-webkit-scrollbar {
-      width: 6px;
+      width: 6px !important;
+      display: block !important;
     }
     
     .page-content-wrapper::-webkit-scrollbar-track {
-      background: transparent;
+      background: rgba(229, 231, 235, 0.2) !important;
+      border-radius: 9999px !important;
+    }
+
+    .dark .page-content-wrapper::-webkit-scrollbar-track {
+      background: rgba(31, 41, 55, 0.2) !important;
     }
     
     .page-content-wrapper::-webkit-scrollbar-thumb {
-      background-color: rgba(59, 130, 246, 0.35);
-      border-radius: 20px;
+      background-color: rgba(156, 163, 175, 0.45) !important;
+      border-radius: 9999px !important;
     }
     
     .page-content-wrapper::-webkit-scrollbar-thumb:hover {
-      background-color: rgba(59, 130, 246, 0.55);
+      background-color: rgba(156, 163, 175, 0.7) !important;
     }
 
     /* Locked size of elements to never break the page width */
@@ -649,14 +669,19 @@ export class ArticleDetailComponent implements OnInit, AfterViewInit {
   calculateScale(): void {
     if (!this.bookViewport) return;
     const width = this.bookViewport.nativeElement.clientWidth;
-    const height = 710; 
+    
+    if (width < 768) {
+      // On mobile, lock scale factor to 1.0 since dimensions are natively styled to 96vw and 65vh via CSS!
+      this.calculatedScale.set(1.0);
+      return;
+    }
 
+    const height = 710; 
     const targetPageWidth = 484; 
     const targetPageHeight = 671; 
     
-    // Desktop has a flanking zoom column on the right side (72px allowance), 
-    // while mobile layout has no flanking controls at all (0px allowance).
-    const flankingAllowance = width < 768 ? 0 : 72;
+    // Desktop has a flanking zoom column on the right side (72px allowance)
+    const flankingAllowance = 72;
     const targetBookWidth = targetPageWidth + flankingAllowance;
     
     // Scale down comfortably so both page card and all controls fit beautifully
