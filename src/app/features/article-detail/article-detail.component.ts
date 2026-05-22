@@ -125,25 +125,39 @@ import { paginateBook } from '../../core/utils/book-paginator';
                #bookViewport
                [style.height.px]="710 * activeScale()">
             
-            <!-- Scaleable Pages Wrapper with Flanking Nav Buttons for Easy Reach -->
-            <div class="relative flex items-center justify-center gap-6"
+            <!-- Scaleable Pages Wrapper with Tap Zones for Easy Navigation -->
+            <div class="relative flex items-center justify-center gap-0"
                  [style.transform]="'scale(' + activeScale() + ')'"
                  [style.transform-origin]="'center center'">
               
-              <!-- Previous Page Button Flanking the Left Side of Card -->
-              <button (click)="prevPage()" 
-                      [disabled]="currentPageIndex() === 0"
-                      class="w-12 h-12 rounded-full bg-white/95 dark:bg-gray-800/95 shadow-xl border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 active:scale-95 disabled:opacity-20 disabled:pointer-events-none transition cursor-pointer select-none">
-                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-
               <!-- Page Sheet wrapper container -->
               <div class="book-pages-wrapper relative flex items-center justify-center gap-0 bg-[#e5e1d7] dark:bg-[#1a1918] p-2 md:p-5 rounded-2xl shadow-2xl border border-[#d2cab8] dark:border-[#2f2e2d] transition-all duration-300">
                 <!-- SINGLE PAGE LAYOUT -->
                 @if (leftPage()) {
                   <div class="book-page-sheet single-page flex flex-col justify-between bg-[#faf8f5] dark:bg-[#232220] text-[#2c2b29] dark:text-[#e4e2df] shadow-[0_10px_25px_rgba(0,0,0,0.15)] relative p-7 select-text">
+                    
+                    <!-- Left Tap Zone Overlay (Click left 50% to go back) -->
+                    <div (click)="prevPage(); $event.stopPropagation()" 
+                         [class.pointer-events-none]="currentPageIndex() === 0"
+                         class="absolute inset-y-0 left-0 w-1/2 cursor-w-resize z-20 group/tap flex items-center justify-start pl-4 select-none">
+                      <div class="w-9 h-9 rounded-full bg-black/5 dark:bg-white/5 text-gray-500 flex items-center justify-center opacity-0 group-hover/tap:opacity-100 transition duration-250 border border-gray-200/50 dark:border-gray-700/50 shadow-sm">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
+                        </svg>
+                      </div>
+                    </div>
+
+                    <!-- Right Tap Zone Overlay (Click right 50% to go forward) -->
+                    <div (click)="nextPage(); $event.stopPropagation()" 
+                         [class.pointer-events-none]="isAtEnd()"
+                         class="absolute inset-y-0 right-0 w-1/2 cursor-e-resize z-20 group/tap flex items-center justify-end pr-4 select-none">
+                      <div class="w-9 h-9 rounded-full bg-black/5 dark:bg-white/5 text-gray-500 flex items-center justify-center opacity-0 group-hover/tap:opacity-100 transition duration-250 border border-gray-200/50 dark:border-gray-700/50 shadow-sm">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
+                        </svg>
+                      </div>
+                    </div>
+
                     <!-- TOP HEADER -->
                     <div class="page-header flex justify-between items-center text-xs text-gray-400 dark:text-gray-500 border-b border-gray-200/50 dark:border-gray-800/40 pb-2 mb-4 font-mono select-none">
                       <span>Trang {{ leftPage()!.pageNumber }}</span>
@@ -174,18 +188,8 @@ import { paginateBook } from '../../core/utils/book-paginator';
                 }
               </div>
 
-              <!-- Right Column: Flanking right elements (Next Page Button & Vertical Zoom Widget) -->
-              <div class="flex flex-col items-center gap-4 justify-center">
-                <!-- Next Page Button Flanking the Card -->
-                <button (click)="nextPage()" 
-                        [disabled]="isAtEnd()"
-                        class="w-12 h-12 rounded-full bg-white/95 dark:bg-gray-800/95 shadow-xl border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 active:scale-95 disabled:opacity-20 disabled:pointer-events-none transition cursor-pointer select-none">
-                  <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
-
-                <!-- Vertical Zoom Widget: centered vertically and close to the page! -->
+              <!-- Desktop Flanking Zoom Widget (Only visible on Desktop!) -->
+              <div class="hidden md:flex flex-col items-center justify-center pl-6 select-none">
                 <div class="flex flex-col items-center gap-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-1.5 shadow-xl select-none w-12">
                   <!-- Zoom In Button -->
                   <button (click)="zoomIn()" class="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/30 cursor-pointer text-gray-600 dark:text-gray-400 transition" title="Zoom In">
@@ -209,6 +213,27 @@ import { paginateBook } from '../../core/utils/book-paginator';
               </div>
 
             </div>
+          </div>
+        </div>
+
+        <!-- Mobile Zoom Toolbar (Only visible on mobile/small screens below viewport!) -->
+        <div class="flex md:hidden items-center justify-center mt-4 select-none">
+          <div class="flex items-center gap-2 bg-white dark:bg-gray-850 border border-gray-200 dark:border-gray-700 rounded-2xl p-1.5 shadow-lg">
+            <!-- Zoom Out -->
+            <button (click)="zoomOut()" class="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer text-gray-600 dark:text-gray-400 transition" title="Zoom Out">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 12H4"/>
+              </svg>
+            </button>
+            <span class="text-xs font-mono font-bold px-2.5 text-gray-600 dark:text-gray-400 select-none min-w-[44px] text-center">
+              {{ Math.round(zoomMultiplier() * 100) }}%
+            </span>
+            <!-- Zoom In -->
+            <button (click)="zoomIn()" class="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer text-gray-600 dark:text-gray-400 transition" title="Zoom In">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
+              </svg>
+            </button>
           </div>
         </div>
 
@@ -629,8 +654,9 @@ export class ArticleDetailComponent implements OnInit, AfterViewInit {
     const targetPageWidth = 484; 
     const targetPageHeight = 671; 
     
-    // Account for flanking elements (prev arrow + next arrow/zoom column) on narrower screens
-    const flankingAllowance = width < 768 ? 144 : 60;
+    // Desktop has a flanking zoom column on the right side (72px allowance), 
+    // while mobile layout has no flanking controls at all (0px allowance).
+    const flankingAllowance = width < 768 ? 0 : 72;
     const targetBookWidth = targetPageWidth + flankingAllowance;
     
     // Scale down comfortably so both page card and all controls fit beautifully
