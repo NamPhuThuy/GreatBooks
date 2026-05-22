@@ -123,7 +123,7 @@ import { paginateBook } from '../../core/utils/book-paginator';
           <!-- Book Viewport -->
           <div class="book-viewport relative w-full flex items-center justify-center overflow-hidden" 
                #bookViewport
-               style="height: 710px;">
+               [style.height.px]="710 * activeScale()">
             
             <!-- Scaleable Pages Wrapper with Flanking Nav Buttons for Easy Reach -->
             <div class="relative flex items-center justify-center gap-6"
@@ -624,18 +624,21 @@ export class ArticleDetailComponent implements OnInit, AfterViewInit {
   calculateScale(): void {
     if (!this.bookViewport) return;
     const width = this.bookViewport.nativeElement.clientWidth;
-    const height = 710; // Locked CSS viewport height matching A4 page sheet height
+    const height = 710; 
 
-    const targetPageWidth = 484; // 10% horizontally wider (440 * 1.10 = 484)
-    const targetPageHeight = 671; // 10% vertically taller (610 * 1.10 = 671)
-    const targetBookWidth = this.isDoublePage() ? targetPageWidth * 2 : targetPageWidth;
+    const targetPageWidth = 484; 
+    const targetPageHeight = 671; 
     
-    // Scale slightly down to leave space for layout padding
+    // Account for flanking elements (prev arrow + next arrow/zoom column) on narrower screens
+    const flankingAllowance = width < 768 ? 144 : 60;
+    const targetBookWidth = targetPageWidth + flankingAllowance;
+    
+    // Scale down comfortably so both page card and all controls fit beautifully
     const scaleX = (width * 0.94) / targetBookWidth;
     const scaleY = (height * 0.94) / targetPageHeight;
     
     const finalScale = Math.min(scaleX, scaleY);
-    this.calculatedScale.set(Math.max(0.35, Math.min(1.8, finalScale)));
+    this.calculatedScale.set(Math.max(0.35, Math.min(1.5, finalScale)));
   }
 
   nextPage(): void {
