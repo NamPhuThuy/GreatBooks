@@ -102,7 +102,7 @@ import { paginateBook } from '../../core/utils/book-paginator';
           </div>
 
           <!-- Title in Center of the bar -->
-          <div class="hidden sm:block text-center text-sm font-semibold text-gray-800 dark:text-gray-200 truncate max-w-[280px]">
+          <div class="hidden sm:block text-center text-sm font-semibold text-gray-800 dark:text-gray-200 max-w-[450px] leading-snug break-words">
             {{ article()![lang()].title }}
           </div>
 
@@ -157,7 +157,7 @@ import { paginateBook } from '../../core/utils/book-paginator';
 
                     <!-- BOTTOM FOOTER -->
                     <div class="page-footer flex justify-between items-center text-xs text-gray-400 dark:text-gray-500 border-t border-gray-200/50 dark:border-gray-800/40 pt-2 mt-4 font-mono select-none">
-                      <span class="truncate max-w-[140px] font-medium">{{ article()![lang()].title }}</span>
+                      <span class="font-medium max-w-[65%] leading-tight text-left break-words">{{ article()![lang()].title }}</span>
                       <span>Trang {{ leftPage()!.pageNumber }}</span>
                     </div>
 
