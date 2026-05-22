@@ -70,3 +70,22 @@ export interface Article extends ArticleIndexEntry {
   en: ArticleLocalizedContent & { chapters?: Chapter[], content?: string };
 }
 
+export interface BookPage {
+  pageIndex: number;      // 0-based index across all pages in the book
+  pageNumber: number;     // 1-based index across all pages in the book
+  chapterTitle: string;   // Current chapter title
+  sectionTitle?: string;  // Current section title
+  contentHtml: string;    // Custom HTML for this page
+  image?: string;         // Optional image URL
+  imageWidth?: number;
+}
+
+export interface Bookmark {
+  bookId: string;
+  lang: 'vi' | 'en';
+  pageIndex: number;      // Page offset in paginated view
+  chapterTitle: string;
+  timestamp: number;
+}
+
+

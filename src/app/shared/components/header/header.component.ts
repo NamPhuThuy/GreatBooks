@@ -19,6 +19,7 @@ import {
   template: `
     <nav
       id="main-nav"
+      [ngClass]="isHeaderHidden() ? '-translate-y-8 opacity-0 scale-95 pointer-events-none' : 'translate-y-0 opacity-100 scale-100'"
       class="fixed top-0 left-0 right-0 z-50 w-full max-w-7xl mx-auto mt-2 md:mt-4 px-4 transition-all duration-300"
     >
       <ng-template #settingsMenu>
@@ -294,6 +295,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   mobileMenuOpen = signal(false);
   settingOpen = signal(false);
+  isHeaderHidden = signal(false);
+  lastScrollY = 0;
   lang = this.langService.currentLang;
   currentUrl = signal(this.router.url);
 
@@ -345,7 +348,17 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
     if (!nav || !container) return;
 
-    if (window.scrollY > 50) {
+    const currentScrollY = window.scrollY;
+
+    // Autohide header on scroll down, show on scroll up (disappear 40% sooner at 72px instead of 120px)
+    if (currentScrollY > this.lastScrollY && currentScrollY > 72) {
+      this.isHeaderHidden.set(true);
+    } else if (currentScrollY < this.lastScrollY) {
+      this.isHeaderHidden.set(false);
+    }
+    this.lastScrollY = currentScrollY;
+
+    if (currentScrollY > 50) {
       if (window.innerWidth >= 768) {
         container.classList.add('glass', 'max-w-[800px]', 'md:py-2');
         container.classList.remove('md:py-3', 'max-w-7xl');

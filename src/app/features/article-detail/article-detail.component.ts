@@ -1,4 +1,4 @@
-import { Component, inject, computed, OnInit, signal, DestroyRef, effect } from '@angular/core';
+import { Component, inject, computed, OnInit, signal, DestroyRef, effect, ViewChild, ElementRef, HostListener, AfterViewInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Title, Meta } from '@angular/platform-browser';
@@ -6,13 +6,13 @@ import { NgClass } from '@angular/common';
 import { ArticleService } from '../../core/services/article.service';
 import { LanguageService } from '../../core/services/language.service';
 import { UserPreferencesService } from '../../core/services/user-preferences.service';
-import { MarkdownPipe } from '../../shared/pipes/markdown.pipe';
+import { BookmarkService } from '../../core/services/bookmark.service';
 import { SafeHtmlPipe } from '../../shared/pipes/safe-html.pipe';
-import { FormatContentPipe } from '../../shared/pipes/format-content-pipe';
 import { RelatedArticlesComponent } from './related-articles.component';
 import { Article } from '../../core/models/article.model';
 import { translateGenre, translateDifficulty } from '../../core/utils/genre-translations';
 import { extractReferences, formatReferencesSection } from '../../core/utils/reference-processor';
+import { paginateBook } from '../../core/utils/book-paginator';
 
 @Component({
   selector: 'app-article-detail',
@@ -20,18 +20,11 @@ import { extractReferences, formatReferencesSection } from '../../core/utils/ref
   imports: [
     RouterLink,
     NgClass,
-    MarkdownPipe,
     SafeHtmlPipe,
-    FormatContentPipe,
     RelatedArticlesComponent,
   ],
   template: `
-    <div class="mx-auto px-4 sm:px-6 lg:px-8 pt-20 md:pt-28 pb-12 transition-all duration-500"
-         [ngClass]="{
-           'max-w-3xl':          prefs.contentWidth() === 'narrow',
-           'max-w-5xl':          prefs.contentWidth() === 'medium',
-           'max-w-screen-2xl':   prefs.contentWidth() === 'wide'
-         }">
+    <div class="mx-auto px-4 sm:px-6 lg:px-8 pt-20 md:pt-28 pb-12 transition-all duration-500">
 
       @if (loadError()) {
         <!-- Error state -->
@@ -41,7 +34,7 @@ import { extractReferences, formatReferencesSection } from '../../core/utils/ref
                   d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
           </svg>
           <p class="text-gray-500 dark:text-gray-400 text-lg">
-            {{ langService.isVietnamese() ? 'Không tìm thấy bài viết.' : 'Article not found.' }}
+            {{ langService.isVietnamese() ? 'Không tìm thấy sách.' : 'Book not found.' }}
           </p>
           <a [routerLink]="['/', lang(), 'books']"
              class="mt-4 inline-block text-blue-600 dark:text-blue-400 hover:underline">
@@ -50,148 +43,188 @@ import { extractReferences, formatReferencesSection } from '../../core/utils/ref
         </div>
 
       } @else if (article()) {
-        <!-- Article Header -->
-        <header class="mb-8">
-          <div class="flex items-center gap-2 mb-4 flex-wrap">
+        <!-- Book Toolbar -->
+        <header class="mb-6 flex flex-wrap gap-4 items-center justify-between">
+          <div class="flex items-center gap-2 flex-wrap">
             <a [routerLink]="['/', lang(), 'books']"
                class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium flex items-center gap-1">
               ← {{ langService.t('article.backToList') }}
             </a>
           </div>
 
-          <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4 leading-tight transition-colors">
-            {{ article()![lang()].title }}
-          </h1>
-
-          <p class="text-lg text-gray-600 dark:text-gray-400 mb-6 transition-colors">
-            {{ article()![lang()].description }}
-          </p>
-
-          <!-- Meta Info -->
-          <div class="flex flex-wrap items-center gap-4 text-sm text-gray-500 dark:text-gray-400 pb-6 border-b border-gray-200 dark:border-gray-800">
-            @if (article()!.metadata.authors.length > 0) {
-              <div class="flex items-center gap-1.5">
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                </svg>
-                <span>{{ article()!.metadata.authors.join(', ') }}</span>
+          <!-- Bookmarking Dropdown -->
+          <div class="relative">
+            <button (click)="toggleBookmarkMenu()"
+                    class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 transition cursor-pointer text-gray-700 dark:text-gray-300 font-medium">
+              🔖 Bookmarks
+              <span class="bg-blue-600 text-white text-xs px-1.5 py-0.5 rounded-full font-bold">
+                {{ currentBookBookmarks().length }}
+              </span>
+            </button>
+            
+            @if (showBookmarkMenu()) {
+              <div class="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 z-50 p-3 max-h-72 overflow-y-auto">
+                <h4 class="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">
+                  {{ langService.isVietnamese() ? 'Trang đã lưu' : 'Saved Pages' }}
+                </h4>
+                @if (currentBookBookmarks().length === 0) {
+                  <p class="text-xs text-gray-400 dark:text-gray-500 py-4 text-center">
+                    {{ langService.isVietnamese() ? 'Chưa lưu trang nào.' : 'No saved pages yet.' }}
+                  </p>
+                } @else {
+                  <div class="space-y-1">
+                    @for (bm of currentBookBookmarks(); track bm.timestamp) {
+                      <button (click)="jumpToPage(bm.pageIndex)"
+                              class="w-full text-left px-2 py-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700/50 transition text-xs flex justify-between items-center text-gray-700 dark:text-gray-300 cursor-pointer">
+                        <span class="font-medium truncate max-w-[160px]">{{ bm.chapterTitle }}</span>
+                        <span class="text-blue-600 dark:text-blue-400 font-bold shrink-0">Trang {{ bm.pageIndex + 1 }}</span>
+                      </button>
+                    }
+                  </div>
+                }
               </div>
-            }
-
-            <div class="flex items-center gap-1.5">
-              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-              </svg>
-              <span>{{ langService.t('article.publishedOn') }}: {{ formatDate(article()!.metadata.publishedDate) }}</span>
-            </div>
-
-            <div class="flex items-center gap-1.5">
-              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-              </svg>
-              <span>{{ readingTime() }} {{ langService.t('article.readingTime') }}</span>
-            </div>
-
-            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                         bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-300">
-              {{ translateGenre(article()!.metadata.genres, lang()) }}
-            </span>
-
-            @if (article()!.metadata.difficultyLevel !== 'Không có thông tin') {
-              <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
-                    [ngClass]="difficultyClass()">
-              {{ translateDifficulty(article()!.metadata.difficultyLevel, lang()) }}
-            </span>
             }
           </div>
         </header>
 
-        <!-- Font / size preferences wrapper -->
-        <div [ngClass]="{
-               'text-sm':   prefs.fontSize() === 'sm',
-               'text-base': prefs.fontSize() === 'base',
-               'text-lg':   prefs.fontSize() === 'lg',
-               'text-xl':   prefs.fontSize() === 'xl',
+        <!-- E-Reader Preferences Bar -->
+        <div class="flex flex-wrap items-center justify-between gap-4 bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-800/80 rounded-2xl p-4 mb-6">
+          <div class="flex items-center gap-3">
+            <!-- Font Style Controls -->
+            <div class="flex items-center gap-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-1 shadow-sm">
+              <button (click)="prefs.setFontStyle('sans')" 
+                      [ngClass]="{'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-bold': prefs.fontStyle() === 'sans'}"
+                      class="px-2.5 py-1 rounded text-xs transition cursor-pointer text-gray-600 dark:text-gray-400 font-sans">Sans</button>
+              <button (click)="prefs.setFontStyle('serif')"
+                      [ngClass]="{'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-bold': prefs.fontStyle() === 'serif'}"
+                      class="px-2.5 py-1 rounded text-xs transition cursor-pointer text-gray-600 dark:text-gray-400 font-serif">Serif</button>
+            </div>
+          </div>
+
+          <!-- Title in Center of the bar -->
+          <div class="hidden sm:block text-center text-sm font-semibold text-gray-800 dark:text-gray-200 truncate max-w-[280px]">
+            {{ article()![lang()].title }}
+          </div>
+
+          <!-- Right Label -->
+          <div class="text-xs text-gray-400 dark:text-gray-500 font-medium select-none">
+            {{ langService.isVietnamese() ? 'Trình đọc sách tối giản' : 'Minimalist Reader' }}
+          </div>
+        </div>
+
+        <!-- REAL BOOK VIEW -->
+        <div class="book-container relative w-full flex items-center justify-center py-6 select-none bg-gray-100 dark:bg-gray-950 rounded-3xl"
+             [ngClass]="{
                'font-sans':  prefs.fontStyle() === 'sans',
                'font-serif': prefs.fontStyle() === 'serif',
                'font-mono':  prefs.fontStyle() === 'mono'
-             }"
-             class="transition-all duration-300">
+             }">
+          
+          <!-- Book Viewport -->
+          <div class="book-viewport relative w-full flex items-center justify-center overflow-hidden" 
+               #bookViewport
+               style="height: 710px;">
+            
+            <!-- Scaleable Pages Wrapper with Flanking Nav Buttons for Easy Reach -->
+            <div class="relative flex items-center justify-center gap-6"
+                 [style.transform]="'scale(' + activeScale() + ')'"
+                 [style.transform-origin]="'center center'">
+              
+              <!-- Previous Page Button Flanking the Left Side of Card -->
+              <button (click)="prevPage()" 
+                      [disabled]="currentPageIndex() === 0"
+                      class="w-12 h-12 rounded-full bg-white/95 dark:bg-gray-800/95 shadow-xl border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 active:scale-95 disabled:opacity-20 disabled:pointer-events-none transition cursor-pointer select-none">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
 
-          <!-- Tags -->
-          @if (article()!.metadata.tags.length > 0) {
-            <div class="flex flex-wrap gap-2 mb-8">
-              @for (tag of article()!.metadata.tags; track tag) {
-                <a [routerLink]="['/', lang(), 'search']" [queryParams]="{ q: tag }"
-                   class="text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300
-                          px-3 py-1 rounded-full hover:bg-blue-100 transition">
-                  #{{ tag }}
-                </a>
-              }
-            </div>
-          }
+              <!-- Page Sheet wrapper container -->
+              <div class="book-pages-wrapper relative flex items-center justify-center gap-0 bg-[#e5e1d7] dark:bg-[#1a1918] p-2 md:p-5 rounded-2xl shadow-2xl border border-[#d2cab8] dark:border-[#2f2e2d] transition-all duration-300">
+                <!-- SINGLE PAGE LAYOUT -->
+                @if (leftPage()) {
+                  <div class="book-page-sheet single-page flex flex-col justify-between bg-[#faf8f5] dark:bg-[#232220] text-[#2c2b29] dark:text-[#e4e2df] shadow-[0_10px_25px_rgba(0,0,0,0.15)] relative p-7 select-text">
+                    <!-- TOP HEADER -->
+                    <div class="page-header flex justify-between items-center text-xs text-gray-400 dark:text-gray-500 border-b border-gray-200/50 dark:border-gray-800/40 pb-2 mb-4 font-mono select-none">
+                      <span>Trang {{ leftPage()!.pageNumber }}</span>
+                      <span class="truncate max-w-[140px] font-medium">{{ leftPage()!.chapterTitle }}</span>
+                    </div>
 
-          <!-- Article Content (Chapters, Sections, Subsections) -->
-          <article class="prose prose-lg dark:prose-invert max-w-none book-content" (click)="onContentClick($event)">
-            @if (articleContent()) {
-              @for (chapter of articleContent()!.chapters; track chapter.title) {
-                @if (chapter.title) {
-                  <h2 class="text-3xl font-bold mt-10 mb-6 text-gray-900 dark:text-gray-100">{{ chapter.title }}</h2>
-                }
-                @if (chapter.image) {
-                  <div class="my-8 overflow-hidden rounded-xl shadow-lg mx-auto" 
-                       [style.width]="chapter.imageWidth ? chapter.imageWidth + 'vw' : ''"
-                       [style.min-width]="chapter.imageWidth ? '300px' : ''"
-                       [style.max-width]="'100%'">
-                    <img [src]="'/assets/data/books/' + article()?.id + '/' + chapter.image" class="w-full h-auto" />
+                    <!-- CONTENT -->
+                    <div class="page-content-wrapper flex-grow overflow-y-auto pr-1">
+                      <div class="prose prose-sm dark:prose-invert max-w-none text-[#2c2b29] dark:text-[#e4e2df]" [style.font-size.px]="fontSizePx()" [innerHTML]="leftPage()!.contentHtml | safeHtml"></div>
+                    </div>
+
+                    <!-- BOTTOM FOOTER -->
+                    <div class="page-footer flex justify-between items-center text-xs text-gray-400 dark:text-gray-500 border-t border-gray-200/50 dark:border-gray-800/40 pt-2 mt-4 font-mono select-none">
+                      <span class="truncate max-w-[140px] font-medium">{{ article()![lang()].title }}</span>
+                      <span>Trang {{ leftPage()!.pageNumber }}</span>
+                    </div>
+
+                    <!-- BOOKMARK BUTTON -->
+                    <button (click)="toggleLeftBookmark()" 
+                            class="absolute top-0 right-6 z-30 transition hover:scale-105 active:scale-95 cursor-pointer"
+                            [title]="isLeftBookmarked() ? 'Xóa bookmark' : 'Bookmark trang này'">
+                      <svg class="w-7 h-9 transition-all duration-300" viewBox="0 0 24 30" fill="currentColor"
+                           [ngClass]="isLeftBookmarked() ? 'text-amber-500' : 'text-gray-300/30 dark:text-gray-700/20 hover:text-amber-400/50'">
+                        <path d="M5 2h14a2 2 0 0 1 2 2v24l-8-6-8 6V4a2 2 0 0 1 2-2z"/>
+                      </svg>
+                    </button>
                   </div>
                 }
-                @for (section of chapter.sections; track section.title) {
-                  @if (section.title) {
-                    <h3 class="text-2xl font-semibold mt-8 mb-4 text-gray-800 dark:text-gray-200">{{ section.title }}</h3>
-                  }
-                  @if (section.image) {
-                    <div class="my-6 overflow-hidden rounded-lg shadow-md mx-auto"
-                         [style.width]="section.imageWidth ? section.imageWidth + 'vw' : ''"
-                         [style.min-width]="section.imageWidth ? '300px' : ''"
-                         [style.max-width]="'100%'">
-                      <img [src]="'/assets/data/books/' + article()?.id + '/' + section.image" class="w-full h-auto" />
-                    </div>
-                  }
-                  @for (sub of section.subSections; track sub.title) {
-                    @if (sub.title) {
-                      <h4 class="text-xl font-medium mt-6 mb-3 text-gray-800 dark:text-gray-300">{{ sub.title }}</h4>
-                    }
-                    @if (sub.image) {
-                      <div class="my-4 overflow-hidden rounded shadow-sm mx-auto"
-                           [style.width]="sub.imageWidth ? sub.imageWidth + 'vw' : ''"
-                           [style.min-width]="sub.imageWidth ? '300px' : ''"
-                           [style.max-width]="'100%'">
-                        <img [src]="'/assets/data/books/' + article()?.id + '/' + sub.image" class="w-full h-auto" />
-                      </div>
-                    }
-                    <div [innerHTML]="sub.content | formatContent: article()?.id | markdown | safeHtml"></div>
-                  }
-                }
-              }
-
-              @if (referencesHtml()) {
-                <div [innerHTML]="referencesHtml()! | safeHtml"></div>
-              }
-            } @else {
-              <div class="text-center py-12">
-                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                <p class="text-gray-500">{{ langService.t('common.loading') }}</p>
               </div>
-            }
-          </article>
+
+              <!-- Right Column: Flanking right elements (Next Page Button & Vertical Zoom Widget) -->
+              <div class="flex flex-col items-center gap-4 justify-center">
+                <!-- Next Page Button Flanking the Card -->
+                <button (click)="nextPage()" 
+                        [disabled]="isAtEnd()"
+                        class="w-12 h-12 rounded-full bg-white/95 dark:bg-gray-800/95 shadow-xl border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 active:scale-95 disabled:opacity-20 disabled:pointer-events-none transition cursor-pointer select-none">
+                  <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+
+                <!-- Vertical Zoom Widget: centered vertically and close to the page! -->
+                <div class="flex flex-col items-center gap-1.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-1.5 shadow-xl select-none w-12">
+                  <!-- Zoom In Button -->
+                  <button (click)="zoomIn()" class="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/30 cursor-pointer text-gray-600 dark:text-gray-400 transition" title="Zoom In">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
+                    </svg>
+                  </button>
+
+                  <!-- Zoom percent indicator -->
+                  <span class="text-[10px] font-mono font-bold py-1 text-gray-500 dark:text-gray-400 select-none text-center leading-none min-w-[36px]">
+                    {{ Math.round(zoomMultiplier() * 100) }}%
+                  </span>
+
+                  <!-- Zoom Out Button -->
+                  <button (click)="zoomOut()" class="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/30 cursor-pointer text-gray-600 dark:text-gray-400 transition" title="Zoom Out">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 12H4"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- PROGRESS BAR -->
+        <div class="max-w-xl mx-auto mt-6 px-4">
+          <div class="flex justify-between items-center text-xs text-gray-500 dark:text-gray-400 mb-1.5 font-mono">
+            <span>{{ langService.isVietnamese() ? 'Đang đọc' : 'Reading progress' }}: {{ getReadingPercent() }}%</span>
+            <span>Trang {{ currentPageIndex() + 1 }} / {{ totalPages() }}</span>
+          </div>
+          <div class="relative w-full h-2 bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden">
+            <div class="h-full bg-blue-600 transition-all duration-300" [style.width]="getReadingPercent() + '%'"></div>
+          </div>
         </div>
 
         <!-- Related Articles -->
-        <div class="border-gray-100 dark:border-gray-800 pt-3">
+        <div class="border-t border-gray-100 dark:border-gray-800 pt-8 mt-12">
           <app-related-articles [articles]="relatedArticles()" />
         </div>
 
@@ -203,31 +236,171 @@ import { extractReferences, formatReferencesSection } from '../../core/utils/ref
         </div>
       }
     </div>
-  `
+  `,
+  styles: [`
+    .book-container {
+      perspective: 1500px;
+    }
+    
+    .book-pages-wrapper {
+      box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.3), 
+                  inset 0 0 20px rgba(255, 255, 255, 0.05);
+    }
+    
+    .book-page-sheet {
+      width: 484px;
+      height: 671px;
+      display: flex;
+      flex-direction: column;
+      justify-between: space-between;
+      border-radius: 4px;
+      box-sizing: border-box;
+      transition: all 0.3s ease;
+      background-color: #faf8f5;
+      color: #2c2b29;
+    }
+
+    .dark .book-page-sheet {
+      background-color: #232220;
+      color: #e4e2df;
+    }
+    
+    .left-page {
+      border-top-left-radius: 8px;
+      border-bottom-left-radius: 8px;
+    }
+    
+    .right-page {
+      border-top-right-radius: 8px;
+      border-bottom-right-radius: 8px;
+    }
+    
+    .book-spine-crease {
+      background: linear-gradient(
+        to right,
+        rgba(0, 0, 0, 0.02) 0%,
+        rgba(0, 0, 0, 0.1) 40%,
+        rgba(0, 0, 0, 0.18) 50%,
+        rgba(0, 0, 0, 0.1) 60%,
+        rgba(0, 0, 0, 0.02) 100%
+      );
+      box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .page-content-wrapper {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(59, 130, 246, 0.45) transparent;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding-right: 0.5rem;
+    }
+    
+    .dark .page-content-wrapper {
+      scrollbar-color: rgba(59, 130, 246, 0.45) transparent;
+    }
+
+    .page-content-wrapper::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    .page-content-wrapper::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    
+    .page-content-wrapper::-webkit-scrollbar-thumb {
+      background-color: rgba(59, 130, 246, 0.35);
+      border-radius: 20px;
+    }
+    
+    .page-content-wrapper::-webkit-scrollbar-thumb:hover {
+      background-color: rgba(59, 130, 246, 0.55);
+    }
+
+    /* Locked size of elements to never break the page width */
+    ::ng-deep .page-content-wrapper * {
+      max-width: 100% !important;
+      box-sizing: border-box !important;
+      overflow-wrap: break-word !important;
+      word-wrap: break-word !important;
+      word-break: break-word !important;
+    }
+
+    /* Target direct HTML classes */
+    ::ng-deep .page-content-wrapper h2 {
+      font-size: 1.5em !important;
+      font-weight: 700 !important;
+      margin-top: 1rem !important;
+      margin-bottom: 0.75rem !important;
+      line-height: 1.25 !important;
+    }
+
+    ::ng-deep .page-content-wrapper h3 {
+      font-size: 1.3em !important;
+      font-weight: 600 !important;
+      margin-top: 0.75rem !important;
+      margin-bottom: 0.5rem !important;
+    }
+
+    ::ng-deep .page-content-wrapper h4 {
+      font-size: 1.15em !important;
+      font-weight: 600 !important;
+      margin-top: 0.75rem !important;
+      margin-bottom: 0.5rem !important;
+    }
+
+    ::ng-deep .page-content-wrapper p {
+      font-size: 0.95em !important;
+      line-height: 1.6 !important;
+      margin-bottom: 0.75rem !important;
+    }
+
+    ::ng-deep .page-content-wrapper img {
+      max-height: 280px !important;
+      max-width: 100% !important;
+      object-fit: contain !important;
+      width: auto !important;
+      display: block;
+      margin: 1rem auto;
+      border-radius: 0.5rem;
+      box-sizing: border-box !important;
+    }
+  `]
 })
-export class ArticleDetailComponent implements OnInit {
+export class ArticleDetailComponent implements OnInit, AfterViewInit {
   private articleService = inject(ArticleService);
   langService = inject(LanguageService);
+  bookmarkService = inject(BookmarkService);
   private route = inject(ActivatedRoute);
   private titleService = inject(Title);
   private metaService = inject(Meta);
   private destroyRef = inject(DestroyRef);
 
   public prefs = inject(UserPreferencesService);
+  readonly Math = Math;
+
+  @ViewChild('bookViewport', { static: false }) bookViewport?: ElementRef;
 
   lang = this.langService.currentLang;
 
   article = signal<Article | undefined>(undefined);
   loadError = signal(false);
 
-  // Parse body and references from current-language content,
-  // falling back to the other language for references if none found.
+  // Pagination-specific UI signals
+  currentPageIndex = signal<number>(0);
+  isDoublePage = signal<boolean>(false);
+  zoomMultiplier = signal<number>(1.0);
+  calculatedScale = signal<number>(1.0);
+  showBookmarkMenu = signal<boolean>(false);
+
+  activeScale = computed(() => this.calculatedScale());
+  fontSizePx = computed(() => 16 * this.zoomMultiplier());
+
+  // Parse body and references from current-language content
   private parsedArticle = computed(() => {
     const a = this.article();
     if (!a) return null;
     const lang = this.lang();
     
-    // Support both old 'content' and new 'chapters' structure
     let chapters = a[lang]?.chapters;
     if (!chapters && a[lang]?.content) {
       chapters = [{
@@ -242,11 +415,8 @@ export class ArticleDetailComponent implements OnInit {
     if (!chapters) return null;
 
     let allReferences: any[] = [];
-    
-    // Deep copy chapters to avoid mutating the signal data directly
     const processedChapters = JSON.parse(JSON.stringify(chapters));
     
-    // Process each subsection's content
     for (const chapter of processedChapters) {
       for (const section of chapter.sections) {
         for (const sub of section.subSections) {
@@ -288,12 +458,58 @@ export class ArticleDetailComponent implements OnInit {
     };
   });
 
-  articleContent  = computed(() => this.parsedArticle() ? { chapters: this.parsedArticle()!.chapters } : null);
-  referencesHtml  = computed(() => this.parsedArticle()?.referencesHtml ?? null);
-
-  readingTime = computed(() => {
+  // Pages derived from parsed article
+  pages = computed(() => {
+    const parsed = this.parsedArticle();
     const a = this.article();
-    return a ? Math.max(1, Math.ceil((a.metadata.length || 0) / 1500)) : 0;
+    if (!parsed || !a) return [];
+    return paginateBook(parsed.chapters, a.id, parsed.referencesHtml);
+  });
+
+  totalPages = computed(() => this.pages().length);
+
+  leftPage = computed(() => {
+    const p = this.pages();
+    const idx = this.currentPageIndex();
+    if (p.length === 0) return null;
+    
+    if (!this.isDoublePage()) {
+      return p[idx] || null;
+    }
+    
+    const leftIdx = idx - (idx % 2);
+    return p[leftIdx] || null;
+  });
+
+  rightPage = computed(() => {
+    const p = this.pages();
+    const idx = this.currentPageIndex();
+    if (p.length === 0 || !this.isDoublePage()) return null;
+    
+    const leftIdx = idx - (idx % 2);
+    const rightIdx = leftIdx + 1;
+    return p[rightIdx] || null;
+  });
+
+  // Bookmark status computed values
+  isLeftBookmarked = computed(() => {
+    const lp = this.leftPage();
+    const a = this.article();
+    if (!lp || !a) return false;
+    return this.bookmarkService.isBookmarked(a.id, this.lang(), lp.pageIndex);
+  });
+
+  isRightBookmarked = computed(() => {
+    const rp = this.rightPage();
+    const a = this.article();
+    if (!rp || !a) return false;
+    return this.bookmarkService.isBookmarked(a.id, this.lang(), rp.pageIndex);
+  });
+
+  currentBookBookmarks = computed(() => {
+    const a = this.article();
+    if (!a) return [];
+    return this.bookmarkService.getBookmarksForBook(a.id, this.lang());
   });
 
   relatedArticles = computed(() => {
@@ -302,14 +518,46 @@ export class ArticleDetailComponent implements OnInit {
   });
 
   constructor() {
+    // Reset scrollbar slider position to top when turning pages
+    effect(() => {
+      const idx = this.currentPageIndex();
+      setTimeout(() => {
+        const wrappers = document.querySelectorAll('.page-content-wrapper');
+        wrappers.forEach(w => w.scrollTop = 0);
+      }, 0);
+    });
+
+    // Synchronize document page titles
     effect(() => {
       const a = this.article();
       if (a) {
         const lang = this.lang();
         this.titleService.setTitle(`${a[lang].title} | Great Books Library`);
-        this.metaService.updateTag({ name: 'description',      content: a[lang].description });
-        this.metaService.updateTag({ property: 'og:title',       content: a[lang].title });
+        this.metaService.updateTag({ name: 'description', content: a[lang].description });
+        this.metaService.updateTag({ property: 'og:title', content: a[lang].title });
         this.metaService.updateTag({ property: 'og:description', content: a[lang].description });
+      }
+    });
+
+    // Auto-load bookmarks when book changes
+    effect(() => {
+      const a = this.article();
+      const lang = this.lang();
+      const bookPages = this.pages();
+      if (a && bookPages.length > 0) {
+        const saved = this.bookmarkService.getBookmarksForBook(a.id, lang);
+        if (saved.length > 0) {
+          const mostRecent = [...saved].sort((x, y) => y.timestamp - x.timestamp)[0];
+          if (mostRecent.pageIndex >= 0 && mostRecent.pageIndex < bookPages.length) {
+            this.currentPageIndex.set(mostRecent.pageIndex);
+          } else {
+            this.currentPageIndex.set(0);
+          }
+        } else {
+          this.currentPageIndex.set(0);
+        }
+        // Run initial scaling
+        setTimeout(() => this.calculateScale(), 50);
       }
     });
   }
@@ -325,16 +573,165 @@ export class ArticleDetailComponent implements OnInit {
         if (slug) {
           this.article.set(undefined);
           this.loadError.set(false);
-          window.scrollTo({ top: 0, behavior: 'instant' });
+          this.currentPageIndex.set(0);
 
           this.articleService.getArticle$(slug)
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe({
-              next: (art) => art ? this.article.set(art) : this.loadError.set(true),
+              next: (art) => {
+                if (art) {
+                  this.article.set(art);
+                } else {
+                  this.loadError.set(true);
+                }
+              },
               error: () => this.loadError.set(true)
             });
         }
       });
+
+    // Permanently set page layout mode to single page
+    this.isDoublePage.set(false);
+  }
+
+  ngAfterViewInit(): void {
+    setTimeout(() => this.calculateScale(), 100);
+  }
+
+  @HostListener('window:resize')
+  onResize(): void {
+    this.isDoublePage.set(false);
+    this.calculateScale();
+  }
+
+  @HostListener('window:keydown', ['$event'])
+  handleKeyDown(event: KeyboardEvent): void {
+    // Only capture page turn events if the user is not actively typing in an input
+    const activeEl = document.activeElement;
+    if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA')) {
+      return;
+    }
+
+    if (event.key === 'ArrowRight' || event.key === ' ') {
+      event.preventDefault();
+      this.nextPage();
+    } else if (event.key === 'ArrowLeft') {
+      event.preventDefault();
+      this.prevPage();
+    }
+  }
+
+  calculateScale(): void {
+    if (!this.bookViewport) return;
+    const width = this.bookViewport.nativeElement.clientWidth;
+    const height = 710; // Locked CSS viewport height matching A4 page sheet height
+
+    const targetPageWidth = 484; // 10% horizontally wider (440 * 1.10 = 484)
+    const targetPageHeight = 671; // 10% vertically taller (610 * 1.10 = 671)
+    const targetBookWidth = this.isDoublePage() ? targetPageWidth * 2 : targetPageWidth;
+    
+    // Scale slightly down to leave space for layout padding
+    const scaleX = (width * 0.94) / targetBookWidth;
+    const scaleY = (height * 0.94) / targetPageHeight;
+    
+    const finalScale = Math.min(scaleX, scaleY);
+    this.calculatedScale.set(Math.max(0.35, Math.min(1.8, finalScale)));
+  }
+
+  nextPage(): void {
+    const pages = this.pages();
+    const total = pages.length;
+    const current = this.currentPageIndex();
+    
+    if (this.isDoublePage()) {
+      const leftIdx = current - (current % 2);
+      if (leftIdx + 2 < total) {
+        this.currentPageIndex.set(leftIdx + 2);
+      }
+    } else {
+      if (current + 1 < total) {
+        this.currentPageIndex.set(current + 1);
+      }
+    }
+  }
+
+  prevPage(): void {
+    const current = this.currentPageIndex();
+    
+    if (this.isDoublePage()) {
+      const leftIdx = current - (current % 2);
+      if (leftIdx - 2 >= 0) {
+        this.currentPageIndex.set(leftIdx - 2);
+      }
+    } else {
+      if (current - 1 >= 0) {
+        this.currentPageIndex.set(current - 1);
+      }
+    }
+  }
+
+  isAtEnd(): boolean {
+    const pages = this.pages();
+    const total = pages.length;
+    const current = this.currentPageIndex();
+    
+    if (this.isDoublePage()) {
+      const leftIdx = current - (current % 2);
+      return leftIdx + 2 >= total;
+    } else {
+      return current + 1 >= total;
+    }
+  }
+
+  toggleDoublePageMode(): void {
+    this.isDoublePage.update(d => !d);
+    setTimeout(() => this.calculateScale(), 50);
+  }
+
+  zoomIn(): void {
+    this.zoomMultiplier.update(z => Math.min(2.0, z + 0.1));
+  }
+
+  zoomOut(): void {
+    this.zoomMultiplier.update(z => Math.max(0.5, z - 0.1));
+  }
+
+  getReadingPercent(): number {
+    const total = this.totalPages();
+    if (total <= 1) return 100;
+    
+    let currentRead = this.currentPageIndex() + 1;
+    if (this.isDoublePage() && this.rightPage()) {
+      currentRead = this.rightPage()!.pageNumber;
+    }
+    
+    return Math.round((currentRead / total) * 100);
+  }
+
+  // Bookmark actions
+  toggleBookmarkMenu(): void {
+    this.showBookmarkMenu.update(s => !s);
+  }
+
+  jumpToPage(index: number): void {
+    this.currentPageIndex.set(index);
+    this.showBookmarkMenu.set(false);
+  }
+
+  toggleLeftBookmark(): void {
+    const lp = this.leftPage();
+    const a = this.article();
+    if (lp && a) {
+      this.bookmarkService.toggleBookmark(a.id, this.lang(), lp.pageIndex, lp.chapterTitle);
+    }
+  }
+
+  toggleRightBookmark(): void {
+    const rp = this.rightPage();
+    const a = this.article();
+    if (rp && a) {
+      this.bookmarkService.toggleBookmark(a.id, this.lang(), rp.pageIndex, rp.chapterTitle);
+    }
   }
 
   readonly translateGenre = translateGenre;
@@ -345,38 +742,5 @@ export class ArticleDetailComponent implements OnInit {
     return date.toLocaleDateString(this.lang() === 'vi' ? 'vi-VN' : 'en-US', {
       year: 'numeric', month: 'long', day: 'numeric'
     });
-  }
-
-  /** Scroll to citation/reference anchor and briefly highlight it. */
-  onContentClick(event: MouseEvent): void {
-    const target = event.target as HTMLElement;
-    const anchor = target.closest('a.citation-link, a.ref-back-link') as HTMLAnchorElement | null;
-    if (anchor) {
-      event.preventDefault();
-      const href = anchor.getAttribute('href');
-      if (href?.startsWith('#')) {
-        const el = document.getElementById(href.substring(1));
-        if (el) {
-          el.scrollIntoView({ behavior: 'instant' });
-          const highlightEl = (el.id.startsWith('cite-')
-            ? el.closest('p, li, blockquote, td, h1, h2, h3, h4') ?? el
-            : el) as HTMLElement;
-          highlightEl.classList.remove('cite-highlight');
-          void highlightEl.offsetWidth;       // force reflow
-          highlightEl.classList.add('cite-highlight');
-        }
-      }
-    }
-  }
-
-  difficultyClass(): string {
-    const a = this.article();
-    if (!a) return '';
-    const level = a.metadata.difficultyLevel;
-    if (level.includes('Cơ bản') || level.includes('Basic'))
-      return 'bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300';
-    if (level.includes('Nâng cao') || level.includes('Chuyên sâu') || level.includes('Advanced'))
-      return 'bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-300';
-    return 'bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-300';
   }
 }
